@@ -4,7 +4,7 @@
 
 ## requirements
 
-- `radio_configuration_requirements.md`：E28-2G4T12S HEX 配置、首次启动配置、`+++` 手动配置入口和串口透传需求。
+- `radio_configuration_requirements.md`：E28-2G4T12S HEX 配置、首次启动配置和串口透传需求。
 
 ## tasks
 

@@ -12,9 +12,6 @@ typedef struct
 {
   app_hw_t hw;
   app_framework_led_t sys_led;
-  uint8_t host_config_trigger_length;
-  bool radio_config_mode;
-  uint32_t radio_config_last_activity_ms;
   uint8_t radio_config_bytes[APP_RADIO_CONFIG_VIEW_BUFFER];
   uint16_t radio_config_length;
 } app_state_t;
@@ -29,7 +26,6 @@ volatile uint32_t g_app_diag_uart3_rx_count;
 volatile uint32_t g_app_diag_uart3_tx_count;
 volatile uint32_t g_app_diag_dt_tag_rx_count;
 volatile uint32_t g_app_diag_rtk_tag_rx_count;
-volatile uint32_t g_app_diag_radio_config_entry_count;
 volatile uint32_t g_app_diag_radio_config_first_boot_count;
 
 static void App_ConfigureRadioTransparentMode(void);
@@ -38,7 +34,6 @@ static void App_WaitRadioModeSwitch(void);
 static void App_ConfigureRadioOnFirstBoot(void);
 static bool App_RadioConfigMarkerIsWritten(void);
 static void App_WriteRadioConfigMarker(void);
-static void App_StartManualRadioConfig(void);
 static bool App_EnterRadioCommandMode(uint32_t baudrate, bool forward_to_host);
 static bool App_FindRadioCommandBaudrate(uint32_t *active_baudrate, bool forward_to_host);
 static bool App_QueryRadioConfig(bool forward_to_host);
@@ -56,12 +51,10 @@ static void App_ServiceWatchdog(void);
 #if APP_UART_STARTUP_BANNER
 static void App_SendStartupBanner(void);
 #endif
-static void App_WriteHostStatus(const char *text);
 static bool App_TryReadUart(UART_HandleTypeDef *source, uint8_t *byte);
 static void App_WriteUart(UART_HandleTypeDef *target, uint8_t byte);
 static void App_WriteBytes(UART_HandleTypeDef *target, const uint8_t *bytes, uint16_t length);
 static void App_PumpUart(UART_HandleTypeDef *source, UART_HandleTypeDef *target);
-static void App_PumpUart2WithConfigTrigger(void);
 
 void App_Init(const app_hw_t *hw)
 {
@@ -90,21 +83,7 @@ void App_Run(void)
   App_PumpUart(g_app.hw.host_uart1, g_app.hw.host_uart1);
   App_PumpUart(g_app.hw.host_uart2, g_app.hw.host_uart2);
 #else
-  if (g_app.radio_config_mode)
-  {
-    App_PumpUart(g_app.hw.host_uart1, g_app.hw.radio_uart);
-    App_PumpUart(g_app.hw.radio_uart, g_app.hw.host_uart1);
-    if ((HAL_GetTick() - g_app.radio_config_last_activity_ms) >= APP_RADIO_CONFIG_IDLE_MS)
-    {
-      g_app.radio_config_mode = false;
-      (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
-      App_ConfigureRadioTransparentMode();
-    }
-    AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, now);
-    return;
-  }
-
-  App_PumpUart2WithConfigTrigger();
+  App_PumpUart(g_app.hw.host_uart1, g_app.hw.radio_uart);
   App_PumpUart(g_app.hw.radio_uart, g_app.hw.host_uart1);
 #endif
   AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, now);
@@ -203,31 +182,6 @@ static void App_WriteRadioConfigMarker(void)
                             APP_RADIO_CONFIG_MARKER_VALUE);
   }
   HAL_FLASH_Lock();
-}
-
-static void App_StartManualRadioConfig(void)
-{
-  uint32_t active_baudrate = APP_UART_BAUDRATE;
-
-  ++g_app_diag_radio_config_entry_count;
-  g_app.radio_config_mode = false;
-  g_app.host_config_trigger_length = 0U;
-  App_WriteHostStatus("\r\nCFG ENTER\r\n");
-
-  if (!App_FindRadioCommandBaudrate(&active_baudrate, true))
-  {
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
-    App_ConfigureRadioTransparentMode();
-    App_WriteHostStatus("CFG FAIL\r\n");
-    return;
-  }
-
-  (void)active_baudrate;
-  (void)App_QueryRadioConfig(true);
-
-  g_app.radio_config_mode = true;
-  g_app.radio_config_last_activity_ms = HAL_GetTick();
-  App_WriteHostStatus("CFG READY\r\n");
 }
 
 static bool App_FindRadioCommandBaudrate(uint32_t *active_baudrate, bool forward_to_host)
@@ -506,14 +460,6 @@ static void App_SendStartupBanner(void)
 }
 #endif
 
-static void App_WriteHostStatus(const char *text)
-{
-  if (text != NULL)
-  {
-    App_WriteBytes(g_app.hw.host_uart1, (const uint8_t *)text, (uint16_t)strlen(text));
-  }
-}
-
 static void App_PumpUart(UART_HandleTypeDef *source, UART_HandleTypeDef *target)
 {
   uint8_t byte;
@@ -526,40 +472,6 @@ static void App_PumpUart(UART_HandleTypeDef *source, UART_HandleTypeDef *target)
   while (App_TryReadUart(source, &byte))
   {
     App_WriteUart(target, byte);
-    g_app.radio_config_last_activity_ms = HAL_GetTick();
-  }
-}
-
-static void App_PumpUart2WithConfigTrigger(void)
-{
-  const char *trigger = APP_UART2_CONFIG_TRIGGER;
-  uint8_t byte;
-
-  if ((g_app.hw.host_uart1 == NULL) || (g_app.hw.radio_uart == NULL))
-  {
-    return;
-  }
-
-  while (App_TryReadUart(g_app.hw.host_uart1, &byte))
-  {
-    if (byte == (uint8_t)trigger[g_app.host_config_trigger_length])
-    {
-      ++g_app.host_config_trigger_length;
-      if (g_app.host_config_trigger_length == strlen(trigger))
-      {
-        g_app.host_config_trigger_length = 0U;
-        App_StartManualRadioConfig();
-        return;
-      }
-      continue;
-    }
-
-    while (g_app.host_config_trigger_length > 0U)
-    {
-      App_WriteUart(g_app.hw.radio_uart, (uint8_t)trigger[0]);
-      --g_app.host_config_trigger_length;
-    }
-    App_WriteUart(g_app.hw.radio_uart, byte);
   }
 }
 
