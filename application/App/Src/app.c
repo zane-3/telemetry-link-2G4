@@ -15,11 +15,8 @@ typedef struct
   uint8_t host_config_trigger_length;
   bool radio_config_mode;
   uint32_t radio_config_last_activity_ms;
-  char radio_config_view[APP_RADIO_CONFIG_VIEW_BUFFER];
   uint8_t radio_config_bytes[APP_RADIO_CONFIG_VIEW_BUFFER];
   uint16_t radio_config_length;
-  bool radio_config_seen_ok;
-  uint8_t radio_config_ok_match;
 } app_state_t;
 
 static app_state_t g_app;
@@ -45,14 +42,12 @@ static void App_StartManualRadioConfig(void);
 static bool App_EnterRadioCommandMode(uint32_t baudrate, bool forward_to_host);
 static bool App_FindRadioCommandBaudrate(uint32_t *active_baudrate, bool forward_to_host);
 static bool App_QueryRadioConfig(bool forward_to_host);
-static bool App_AlignRadioBaudrate(uint32_t active_baudrate, bool forward_to_host);
 static bool App_E28WriteConfig(bool forward_to_host);
 static void App_E28BuildConfigFrame(uint8_t head, uint8_t frame[6]);
 static bool App_E28ResponseHasParameters(void);
+static bool App_E28ResponseMatchesConfig(void);
+static bool App_E28FrameMatchesAt(uint16_t index, const uint8_t expected[6]);
 static void App_WriteHostHexDump(const uint8_t *bytes, uint16_t length);
-static bool App_ParseRadioBaudSetting(uint32_t *s102_value);
-static void App_ResetRadioOkDetector(void);
-static void App_UpdateRadioOkDetector(uint8_t byte);
 static void App_SendRadioBytes(const uint8_t *bytes, uint16_t length);
 static void App_ReadRadioFor(uint32_t wait_ms, bool forward_to_host);
 static void App_ClearRadioInput(void);
@@ -102,6 +97,7 @@ void App_Run(void)
     if ((HAL_GetTick() - g_app.radio_config_last_activity_ms) >= APP_RADIO_CONFIG_IDLE_MS)
     {
       g_app.radio_config_mode = false;
+      (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
       App_ConfigureRadioTransparentMode();
     }
     AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, now);
@@ -162,22 +158,21 @@ static void App_ConfigureRadioOnFirstBoot(void)
   if (!App_FindRadioCommandBaudrate(&active_baudrate, forward_to_host))
   {
     (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
+    App_ConfigureRadioTransparentMode();
     return;
   }
 
   if (App_QueryRadioConfig(forward_to_host))
   {
-    configured = App_E28WriteConfig(forward_to_host) && App_QueryRadioConfig(forward_to_host);
+    configured = App_E28WriteConfig(forward_to_host) &&
+                 App_QueryRadioConfig(forward_to_host) &&
+                 App_E28ResponseMatchesConfig();
   }
   if (configured)
   {
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
     App_WriteRadioConfigMarker();
   }
-  else
-  {
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_DEFAULT_BAUDRATE);
-  }
+  (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
   App_ConfigureRadioTransparentMode();
 #endif
 }
@@ -221,25 +216,14 @@ static void App_StartManualRadioConfig(void)
 
   if (!App_FindRadioCommandBaudrate(&active_baudrate, true))
   {
-#if APP_RADIO_CONFIG_ALLOW_FALLBACK
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_CONFIG_FALLBACK_BAUDRATE);
-    g_app.radio_config_mode = true;
-    g_app.radio_config_last_activity_ms = HAL_GetTick();
-    App_WriteHostStatus("CFG WARN NO RADIO ACK\r\n");
-    App_WriteHostStatus("CFG READY\r\n");
-    return;
-#else
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_DEFAULT_BAUDRATE);
+    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
     App_ConfigureRadioTransparentMode();
     App_WriteHostStatus("CFG FAIL\r\n");
     return;
-#endif
   }
 
-  if (App_QueryRadioConfig(true))
-  {
-    (void)App_AlignRadioBaudrate(active_baudrate, true);
-  }
+  (void)active_baudrate;
+  (void)App_QueryRadioConfig(true);
 
   g_app.radio_config_mode = true;
   g_app.radio_config_last_activity_ms = HAL_GetTick();
@@ -312,35 +296,6 @@ static bool App_QueryRadioConfig(bool forward_to_host)
   return false;
 }
 
-static bool App_AlignRadioBaudrate(uint32_t active_baudrate, bool forward_to_host)
-{
-  uint32_t s102_value;
-  bool changed = false;
-
-  if (!App_ParseRadioBaudSetting(&s102_value))
-  {
-    return false;
-  }
-
-  if (s102_value != APP_RADIO_BAUD_S102_VALUE)
-  {
-    changed = App_E28WriteConfig(forward_to_host);
-  }
-
-  if ((active_baudrate != APP_UART_BAUDRATE) || changed)
-  {
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
-    if (App_EnterRadioCommandMode(APP_UART_BAUDRATE, forward_to_host))
-    {
-      return App_QueryRadioConfig(forward_to_host) && App_ParseRadioBaudSetting(&s102_value) &&
-             (s102_value == APP_RADIO_BAUD_S102_VALUE);
-    }
-    return false;
-  }
-
-  return true;
-}
-
 static bool App_E28WriteConfig(bool forward_to_host)
 {
   uint8_t frame[6];
@@ -348,7 +303,7 @@ static bool App_E28WriteConfig(bool forward_to_host)
   App_E28BuildConfigFrame(0xC0U, frame);
   App_SendRadioBytes(frame, (uint16_t)sizeof(frame));
   App_ReadRadioFor(APP_RADIO_CONFIG_CMD_WAIT_MS, false);
-  if (App_E28ResponseHasParameters())
+  if (App_E28ResponseMatchesConfig())
   {
     if (forward_to_host)
     {
@@ -390,6 +345,46 @@ static bool App_E28ResponseHasParameters(void)
   return false;
 }
 
+static bool App_E28ResponseMatchesConfig(void)
+{
+  uint8_t expected[6];
+  uint16_t index;
+
+  if (g_app.radio_config_length < 6U)
+  {
+    return false;
+  }
+
+  App_E28BuildConfigFrame(0xC0U, expected);
+  for (index = 0U; index <= (uint16_t)(g_app.radio_config_length - 6U); ++index)
+  {
+    if (App_E28FrameMatchesAt(index, expected))
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+static bool App_E28FrameMatchesAt(uint16_t index, const uint8_t expected[6])
+{
+  uint8_t offset;
+
+  if ((expected == NULL) || ((uint16_t)(index + 6U) > g_app.radio_config_length))
+  {
+    return false;
+  }
+
+  for (offset = 0U; offset < 6U; ++offset)
+  {
+    if (g_app.radio_config_bytes[index + offset] != expected[offset])
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 static void App_WriteHostHexDump(const uint8_t *bytes, uint16_t length)
 {
   static const char hex[] = "0123456789ABCDEF";
@@ -411,51 +406,6 @@ static void App_WriteHostHexDump(const uint8_t *bytes, uint16_t length)
   }
 }
 
-static bool App_ParseRadioBaudSetting(uint32_t *s102_value)
-{
-  uint16_t index;
-
-  if ((s102_value == NULL) || (g_app.radio_config_length < 6U))
-  {
-    return false;
-  }
-
-  for (index = 0U; index <= (uint16_t)(g_app.radio_config_length - 6U); ++index)
-  {
-    if (g_app.radio_config_bytes[index] == 0xC0U)
-    {
-      *s102_value = (uint32_t)((g_app.radio_config_bytes[index + 3U] >> 3) & 0x07U);
-      return true;
-    }
-  }
-
-  return false;
-}
-
-static void App_ResetRadioOkDetector(void)
-{
-  g_app.radio_config_seen_ok = false;
-  g_app.radio_config_ok_match = 0U;
-}
-
-static void App_UpdateRadioOkDetector(uint8_t byte)
-{
-  const char ok[] = "OK";
-
-  if (byte == (uint8_t)ok[g_app.radio_config_ok_match])
-  {
-    ++g_app.radio_config_ok_match;
-    if (g_app.radio_config_ok_match == (uint8_t)(sizeof(ok) - 1U))
-    {
-      g_app.radio_config_seen_ok = true;
-      g_app.radio_config_ok_match = 0U;
-    }
-    return;
-  }
-
-  g_app.radio_config_ok_match = (byte == (uint8_t)ok[0]) ? 1U : 0U;
-}
-
 static void App_SendRadioBytes(const uint8_t *bytes, uint16_t length)
 {
   App_WriteBytes(g_app.hw.radio_uart, bytes, length);
@@ -464,24 +414,14 @@ static void App_SendRadioBytes(const uint8_t *bytes, uint16_t length)
 static void App_ReadRadioFor(uint32_t wait_ms, bool forward_to_host)
 {
   const uint32_t start = HAL_GetTick();
-  uint16_t used = 0U;
   uint8_t byte;
 
-  g_app.radio_config_view[0] = '\0';
   g_app.radio_config_length = 0U;
-  App_ResetRadioOkDetector();
   while ((HAL_GetTick() - start) < wait_ms)
   {
     App_ServiceWatchdog();
     while (App_TryReadUart(g_app.hw.radio_uart, &byte))
     {
-      App_UpdateRadioOkDetector(byte);
-      if (used < (uint16_t)(sizeof(g_app.radio_config_view) - 1U))
-      {
-        g_app.radio_config_view[used] = (char)byte;
-        ++used;
-        g_app.radio_config_view[used] = '\0';
-      }
       if (g_app.radio_config_length < (uint16_t)sizeof(g_app.radio_config_bytes))
       {
         g_app.radio_config_bytes[g_app.radio_config_length] = byte;
