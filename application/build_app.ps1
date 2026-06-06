@@ -20,17 +20,17 @@ if ($Role -eq 'master') {
   if ($LocalId -eq 0) { $LocalId = 1 }
   if ($RemoteId -eq 0) { $RemoteId = 2 }
   $roleDefines = @(
-    '-DAPP_RADIO_DEVICE_ROLE=APP_RADIO_ROLE_MASTER',
-    "-DAPP_RADIO_LOCAL_ID=${LocalId}U",
-    "-DAPP_RADIO_REMOTE_ID=${RemoteId}U"
+    '-DAPP_RADIO_DEFAULT_ROLE=APP_RADIO_ROLE_MASTER',
+    "-DAPP_RADIO_DEFAULT_LOCAL_ID=${LocalId}U",
+    "-DAPP_RADIO_DEFAULT_REMOTE_ID=${RemoteId}U"
   )
 } else {
-  if ($LocalId -eq 0) { $LocalId = 2 }
+  if ($LocalId -eq 0) { $LocalId = 1 }
   if ($RemoteId -eq 0) { $RemoteId = 1 }
   $roleDefines = @(
-    '-DAPP_RADIO_DEVICE_ROLE=APP_RADIO_ROLE_SLAVE',
-    "-DAPP_RADIO_LOCAL_ID=${LocalId}U",
-    "-DAPP_RADIO_REMOTE_ID=${RemoteId}U"
+    '-DAPP_RADIO_DEFAULT_ROLE=APP_RADIO_ROLE_SLAVE',
+    "-DAPP_RADIO_DEFAULT_LOCAL_ID=${LocalId}U",
+    "-DAPP_RADIO_DEFAULT_REMOTE_ID=${RemoteId}U"
   )
 }
 
