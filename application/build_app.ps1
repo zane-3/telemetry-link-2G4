@@ -25,7 +25,7 @@ if ($Role -eq 'master') {
     "-DAPP_RADIO_REMOTE_ID=${RemoteId}U"
   )
 } else {
-  if ($LocalId -eq 0) { $LocalId = 2 }
+  if ($LocalId -eq 0) { $LocalId = 1 }
   if ($RemoteId -eq 0) { $RemoteId = 1 }
   $roleDefines = @(
     '-DAPP_RADIO_DEVICE_ROLE=APP_RADIO_ROLE_SLAVE',
