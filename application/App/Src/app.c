@@ -28,10 +28,16 @@ typedef struct
 {
   uint32_t magic;
   uint32_t version;
+  uint32_t crc;
   uint32_t role;
   uint32_t local_id;
+  uint32_t remote_id;
+  uint32_t channel;
+  uint32_t option;
+  uint32_t filter_enable;
+  uint32_t ack_enable;
   uint32_t marker;
-} app_radio_config_flash_t;
+} app_radio_runtime_config_t;
 
 typedef struct
 {
@@ -42,10 +48,13 @@ typedef struct
   app_frame_parser_t host_frame_parser;
   app_frame_parser_t radio_frame_parser;
   app_pending_ack_t pending_ack;
-  uint8_t radio_local_id;
+  app_radio_runtime_config_t radio_config;
 #if APP_HOST_CFG_COMMAND_ENABLE
   uint8_t host_cfg_command[APP_HOST_CFG_COMMAND_BUFFER];
   uint16_t host_cfg_command_length;
+  bool cfg_mode_active;
+  uint32_t cfg_mode_deadline_ms;
+  uint8_t cfg_mode_prefix_index;
 #endif
 } app_state_t;
 
@@ -70,8 +79,10 @@ static void App_ConfigureRadioTransparentMode(void);
 static void App_ConfigureRadioCommandMode(void);
 static void App_WaitRadioModeSwitch(void);
 static bool App_ConfigureRadioOnFirstBoot(void);
+static void App_LoadRadioDefaultConfig(void);
 static void App_LoadRadioRuntimeConfig(void);
-static bool App_RadioConfigStorageIsValid(const app_radio_config_flash_t *config);
+static bool App_RadioConfigStorageIsValid(const app_radio_runtime_config_t *config);
+static uint32_t App_RadioConfigCrc(const app_radio_runtime_config_t *config);
 static bool App_RadioConfigMarkerIsWritten(void);
 static void App_WriteRadioConfigMarker(void);
 static void App_WriteRadioConfigStorage(bool marker_written);
@@ -82,6 +93,10 @@ static bool App_E28WriteConfig(bool forward_to_host);
 static void App_E28BuildConfigFrame(uint8_t head, uint8_t frame[6]);
 static uint16_t App_E28LocalAddress(void);
 static uint8_t App_RadioLocalFrameId(void);
+static bool App_RadioRoleIsMaster(void);
+static bool App_RadioRoleIsSlave(void);
+static bool App_RadioFilterIsEnabled(void);
+static bool App_RadioAckIsEnabled(void);
 static uint32_t App_RadioConfigMarkerValue(void);
 static bool App_E28ResponseHasParameters(void);
 static bool App_E28ResponseMatchesConfig(void);
@@ -98,7 +113,7 @@ static void App_SendStartupBanner(void);
 static bool App_TryReadUart(UART_HandleTypeDef *source, uint8_t *byte);
 static void App_WriteUart(UART_HandleTypeDef *target, uint8_t byte);
 static void App_WriteBytes(UART_HandleTypeDef *target, const uint8_t *bytes, uint16_t length);
-#if APP_UART_SELF_TEST_ECHO || !APP_RADIO_FILTER_ENABLE
+#if APP_UART_SELF_TEST_ECHO
 static void App_PumpUart(UART_HandleTypeDef *source, UART_HandleTypeDef *target);
 #endif
 static void App_PumpHostToRadio(void);
@@ -109,9 +124,14 @@ static bool App_TryHandleHostConfigByte(uint8_t byte);
 static void App_FlushHostConfigCommand(void);
 static void App_ProcessHostConfigCommand(void);
 static bool App_ConfigCommandPrefixMatches(void);
-static bool App_ParseConfigId(uint8_t *local_id);
+static bool App_ParseConfigAssignment(char *key, uint16_t key_size, uint16_t *value, bool *hex_prefixed);
+static bool App_ParseConfigRole(uint32_t *role);
+static bool App_ParseConfigNumber(const uint8_t *bytes, uint16_t length, uint16_t *value);
+static void App_PrintRuntimeConfig(void);
 static void App_WriteHostString(const char *text);
 static void App_WriteHostHex16(uint16_t value);
+static void App_ExitCfgMode(void);
+static void App_CheckCfgModeTimeout(void);
 #endif
 static void App_FrameParserFeed(app_frame_parser_t *parser, uint8_t byte, bool from_radio);
 static void App_FrameParserReset(app_frame_parser_t *parser);
@@ -119,20 +139,22 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
 static bool App_FrameIsValid(const uint8_t *frame, uint16_t length);
 static bool App_FrameTargetMatches(uint8_t target);
 static uint8_t App_FrameChecksum(const uint8_t *bytes, uint16_t length);
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_SLAVE
 static void App_SendAck(uint8_t request_seq, uint8_t request_cmd);
-#endif
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
 static void App_RecordPendingAck(uint8_t target, uint8_t seq, uint8_t cmd);
-#endif
 static void App_CheckPendingAckTimeout(void);
 
 void App_Init(const app_hw_t *hw)
 {
   memset(&g_app, 0, sizeof(g_app));
   g_app.hw = *hw;
-  g_app.radio_local_id = (uint8_t)APP_RADIO_LOCAL_ID;
+  App_LoadRadioDefaultConfig();
   App_LoadRadioRuntimeConfig();
+
+#if APP_HOST_CFG_COMMAND_ENABLE
+  g_app.cfg_mode_active = false;
+  g_app.cfg_mode_prefix_index = 0;
+  g_app.host_cfg_command_length = 0;
+#endif
 
   AppFrameworkLed_Init(&g_app.sys_led,
                        g_app.hw.sys_led_port,
@@ -159,6 +181,9 @@ void App_Run(void)
   App_PumpHostToRadio();
   App_PumpRadioToHost();
   App_CheckPendingAckTimeout();
+#if APP_HOST_CFG_COMMAND_ENABLE
+  App_CheckCfgModeTimeout();
+#endif
 #endif
   AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, now);
 }
@@ -186,6 +211,7 @@ static void App_WaitRadioModeSwitch(void)
   while ((HAL_GetTick() - start) < APP_RADIO_MODE_SWITCH_WAIT_MS)
   {
     App_ServiceWatchdog();
+    AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, HAL_GetTick());
     if ((g_app.hw.radio_aux_port != NULL) &&
         (HAL_GPIO_ReadPin(g_app.hw.radio_aux_port, g_app.hw.radio_aux_pin) == GPIO_PIN_SET))
     {
@@ -201,15 +227,32 @@ static bool App_ConfigureRadioOnFirstBoot(void)
   bool configured = false;
   const bool forward_to_host = (APP_RADIO_CONFIG_FIRST_BOOT_FORWARD != 0U);
 
-  if ((g_app.hw.radio_uart == NULL) || App_RadioConfigMarkerIsWritten())
+  if (g_app.hw.radio_uart == NULL)
   {
     return true;
   }
 
+  // 强制每次重启都重新配置E28，确保配置生效
+  // if (App_RadioConfigMarkerIsWritten())
+  // {
+  //   return true;
+  // }
+
   ++g_app_diag_radio_config_first_boot_count;
+
+  // 诊断输出
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 CONFIGURING...\r\n");
+  }
+
   App_ReadRadioFor(APP_RADIO_CONFIG_STARTUP_WAIT_MS, forward_to_host);
   if (!App_FindRadioCommandBaudrate(&active_baudrate, forward_to_host))
   {
+    if (g_app.hw.host_uart1 != NULL)
+    {
+      App_WriteHostString("E28 CONFIG FAILED: BAUDRATE NOT FOUND\r\n");
+    }
     (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
     App_ConfigureRadioTransparentMode();
     return false;
@@ -223,7 +266,18 @@ static bool App_ConfigureRadioOnFirstBoot(void)
   }
   if (configured)
   {
+    if (g_app.hw.host_uart1 != NULL)
+    {
+      App_WriteHostString("E28 CONFIG OK\r\n");
+    }
     App_WriteRadioConfigMarker();
+  }
+  else
+  {
+    if (g_app.hw.host_uart1 != NULL)
+    {
+      App_WriteHostString("E28 CONFIG FAILED: VERIFY FAILED\r\n");
+    }
   }
   (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
   App_ConfigureRadioTransparentMode();
@@ -235,45 +289,94 @@ static bool App_ConfigureRadioOnFirstBoot(void)
 
 static void App_LoadRadioRuntimeConfig(void)
 {
-  const app_radio_config_flash_t *config =
-      (const app_radio_config_flash_t *)APP_RADIO_CONFIG_MARKER_ADDR;
+  const app_radio_runtime_config_t *config =
+      (const app_radio_runtime_config_t *)APP_RADIO_CONFIG_MARKER_ADDR;
 
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_SLAVE
   if (App_RadioConfigStorageIsValid(config))
   {
-    g_app.radio_local_id = (uint8_t)config->local_id;
+    g_app.radio_config = *config;
   }
-#else
-  (void)config;
-#endif
 }
 
-static bool App_RadioConfigStorageIsValid(const app_radio_config_flash_t *config)
+static void App_LoadRadioDefaultConfig(void)
+{
+  memset(&g_app.radio_config, 0, sizeof(g_app.radio_config));
+  g_app.radio_config.magic = APP_RADIO_CONFIG_FLASH_MAGIC;
+  g_app.radio_config.version = APP_RADIO_CONFIG_FLASH_VERSION;
+  g_app.radio_config.role = APP_RADIO_DEFAULT_ROLE;
+  g_app.radio_config.local_id = APP_RADIO_DEFAULT_LOCAL_ID;
+  g_app.radio_config.remote_id = APP_RADIO_DEFAULT_REMOTE_ID;
+  g_app.radio_config.channel = APP_RADIO_E28_CHANNEL;
+  g_app.radio_config.option = APP_RADIO_E28_OPTION;
+  g_app.radio_config.filter_enable = APP_RADIO_DEFAULT_FILTER_ENABLE;
+  g_app.radio_config.ack_enable = APP_RADIO_DEFAULT_ACK_ENABLE;
+  g_app.radio_config.marker = 0xFFFFFFFFU;
+  g_app.radio_config.crc = App_RadioConfigCrc(&g_app.radio_config);
+}
+
+static bool App_RadioConfigStorageIsValid(const app_radio_runtime_config_t *config)
 {
   if (config == NULL)
   {
     return false;
   }
   if ((config->magic != APP_RADIO_CONFIG_FLASH_MAGIC) ||
-      (config->version != APP_RADIO_CONFIG_FLASH_VERSION) ||
-      (config->role != APP_RADIO_DEVICE_ROLE))
+      (config->version != APP_RADIO_CONFIG_FLASH_VERSION))
   {
     return false;
   }
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_SLAVE
-  return (config->local_id >= 1U) && (config->local_id <= 0xFEU);
-#else
-  return config->local_id == APP_RADIO_MASTER_ID;
-#endif
+  if ((config->role != APP_RADIO_ROLE_MASTER) &&
+      (config->role != APP_RADIO_ROLE_SLAVE))
+  {
+    return false;
+  }
+  if ((config->local_id < 1U) || (config->local_id > 0xFEU) ||
+      (config->remote_id < 1U) || (config->remote_id > 0xFEU) ||
+      (config->channel > 0xFFU) ||
+      (config->option > 0xFFU) ||
+      (config->filter_enable > 1U) ||
+      (config->ack_enable > 1U))
+  {
+    return false;
+  }
+  return config->crc == App_RadioConfigCrc(config);
+}
+
+static uint32_t App_RadioConfigCrc(const app_radio_runtime_config_t *config)
+{
+  uint32_t crc = 0xA5C35A3CU;
+
+  if (config == NULL)
+  {
+    return 0U;
+  }
+
+  crc ^= config->magic;
+  crc ^= config->version << 1;
+  crc ^= config->role << 2;
+  crc ^= config->local_id << 3;
+  crc ^= config->remote_id << 4;
+  crc ^= config->channel << 5;
+  crc ^= config->option << 6;
+  crc ^= config->filter_enable << 7;
+  crc ^= config->ack_enable << 8;
+  crc ^= config->marker << 9;
+  return crc;
 }
 
 static bool App_RadioConfigMarkerIsWritten(void)
 {
-  const app_radio_config_flash_t *config =
-      (const app_radio_config_flash_t *)APP_RADIO_CONFIG_MARKER_ADDR;
+  const app_radio_runtime_config_t *config =
+      (const app_radio_runtime_config_t *)APP_RADIO_CONFIG_MARKER_ADDR;
 
   return App_RadioConfigStorageIsValid(config) &&
-         (config->local_id == App_RadioLocalFrameId()) &&
+         (config->role == g_app.radio_config.role) &&
+         (config->local_id == g_app.radio_config.local_id) &&
+         (config->remote_id == g_app.radio_config.remote_id) &&
+         (config->channel == g_app.radio_config.channel) &&
+         (config->option == g_app.radio_config.option) &&
+         (config->filter_enable == g_app.radio_config.filter_enable) &&
+         (config->ack_enable == g_app.radio_config.ack_enable) &&
          (config->marker == App_RadioConfigMarkerValue());
 }
 
@@ -286,13 +389,8 @@ static void App_WriteRadioConfigStorage(bool marker_written)
 {
   FLASH_EraseInitTypeDef erase;
   uint32_t page_error = 0U;
-  const uint32_t values[] = {
-      APP_RADIO_CONFIG_FLASH_MAGIC,
-      APP_RADIO_CONFIG_FLASH_VERSION,
-      APP_RADIO_DEVICE_ROLE,
-      App_RadioLocalFrameId(),
-      marker_written ? App_RadioConfigMarkerValue() : 0xFFFFFFFFU,
-  };
+  app_radio_runtime_config_t config = g_app.radio_config;
+  const uint32_t *values = (const uint32_t *)&config;
   uint32_t address = APP_RADIO_CONFIG_MARKER_ADDR;
   uint32_t index;
 
@@ -301,13 +399,18 @@ static void App_WriteRadioConfigStorage(bool marker_written)
     return;
   }
 
+  config.magic = APP_RADIO_CONFIG_FLASH_MAGIC;
+  config.version = APP_RADIO_CONFIG_FLASH_VERSION;
+  config.marker = marker_written ? App_RadioConfigMarkerValue() : 0xFFFFFFFFU;
+  config.crc = App_RadioConfigCrc(&config);
+
   HAL_FLASH_Unlock();
   erase.TypeErase = FLASH_TYPEERASE_PAGES;
   erase.PageAddress = APP_RADIO_CONFIG_MARKER_ADDR;
   erase.NbPages = 1U;
   if (HAL_FLASHEx_Erase(&erase, &page_error) == HAL_OK)
   {
-    for (index = 0U; index < (sizeof(values) / sizeof(values[0])); ++index)
+    for (index = 0U; index < (sizeof(config) / sizeof(uint32_t)); ++index)
     {
       if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, address, values[index]) != HAL_OK)
       {
@@ -317,6 +420,7 @@ static void App_WriteRadioConfigStorage(bool marker_written)
     }
   }
   HAL_FLASH_Lock();
+  g_app.radio_config = config;
 }
 
 static bool App_FindRadioCommandBaudrate(uint32_t *active_baudrate, bool forward_to_host)
@@ -389,18 +493,55 @@ static bool App_E28WriteConfig(bool forward_to_host)
 {
   uint8_t frame[6];
 
+  // 步骤1：发送配置命令（0xC0）
   App_E28BuildConfigFrame(0xC0U, frame);
   App_SendRadioBytes(frame, (uint16_t)sizeof(frame));
   App_ReadRadioFor(APP_RADIO_CONFIG_CMD_WAIT_MS, false);
-  if (App_E28ResponseMatchesConfig())
+
+  if (!App_E28ResponseMatchesConfig())
   {
-    if (forward_to_host)
+    if (g_app.hw.host_uart1 != NULL)
     {
-      App_WriteHostHexDump(g_app.radio_config_bytes, g_app.radio_config_length);
+      App_WriteHostString("E28 WRITE CONFIG FAILED\r\n");
     }
-    return true;
+    return false;
   }
-  return false;
+
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 WRITE CONFIG OK\r\n");
+  }
+
+  // 步骤2：发送保存命令（0xC2）保存到Flash
+  frame[0] = 0xC2U;  // SAVE command
+  frame[1] = 0xC2U;
+  frame[2] = 0xC2U;
+  App_SendRadioBytes(frame, 3);
+  HAL_Delay(200);  // 等待保存完成
+
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 SAVE SENT\r\n");
+  }
+
+  // 步骤3：复位模块使配置生效
+  frame[0] = 0xC3U;  // RESET command
+  frame[1] = 0xC3U;
+  frame[2] = 0xC3U;
+  App_SendRadioBytes(frame, 3);
+  HAL_Delay(1000);  // 等待复位完成（增加到1秒）
+
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 RESET SENT\r\n");
+  }
+
+  if (forward_to_host)
+  {
+    App_WriteHostHexDump(g_app.radio_config_bytes, g_app.radio_config_length);
+  }
+
+  return true;
 }
 
 static void App_E28BuildConfigFrame(uint8_t head, uint8_t frame[6])
@@ -411,37 +552,54 @@ static void App_E28BuildConfigFrame(uint8_t head, uint8_t frame[6])
   frame[1] = (uint8_t)(address >> 8);
   frame[2] = (uint8_t)(address & 0xFFU);
   frame[3] = (uint8_t)((APP_RADIO_E28_UART_BAUD_BITS << 3) | APP_RADIO_E28_AIR_RATE_BITS);
-  frame[4] = (uint8_t)APP_RADIO_E28_CHANNEL;
-  frame[5] = (uint8_t)APP_RADIO_E28_OPTION;
+  frame[4] = (uint8_t)g_app.radio_config.channel;
+  frame[5] = (uint8_t)g_app.radio_config.option;
 }
 
 static uint16_t App_E28LocalAddress(void)
 {
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
-  return (uint16_t)APP_RADIO_MASTER_ADDRESS;
-#else
-  return (uint16_t)(APP_RADIO_SLAVE_BASE_ADDR + g_app.radio_local_id);
-#endif
+  if (App_RadioRoleIsMaster())
+  {
+    return (uint16_t)APP_RADIO_MASTER_ADDRESS;
+  }
+  return (uint16_t)(APP_RADIO_SLAVE_BASE_ADDR + g_app.radio_config.local_id);
 }
 
 static uint8_t App_RadioLocalFrameId(void)
 {
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
-  return (uint8_t)APP_RADIO_MASTER_ID;
-#else
-  return g_app.radio_local_id;
-#endif
+  return (uint8_t)g_app.radio_config.local_id;
+}
+
+static bool App_RadioRoleIsMaster(void)
+{
+  return g_app.radio_config.role == APP_RADIO_ROLE_MASTER;
+}
+
+static bool App_RadioRoleIsSlave(void)
+{
+  return g_app.radio_config.role == APP_RADIO_ROLE_SLAVE;
+}
+
+static bool App_RadioFilterIsEnabled(void)
+{
+  return g_app.radio_config.filter_enable != 0U;
+}
+
+static bool App_RadioAckIsEnabled(void)
+{
+  return g_app.radio_config.ack_enable != 0U;
 }
 
 static uint32_t App_RadioConfigMarkerValue(void)
 {
   uint32_t marker = 0xE2800000U;
 
-  marker ^= ((uint32_t)APP_RADIO_DEVICE_ROLE & 0x0FU) << 24;
+  marker ^= ((uint32_t)g_app.radio_config.role & 0x0FU) << 24;
   marker ^= ((uint32_t)App_RadioLocalFrameId() & 0xFFU) << 16;
+  marker ^= ((uint32_t)g_app.radio_config.remote_id & 0xFFU) << 12;
   marker ^= ((uint32_t)App_E28LocalAddress() & 0xFFFFU);
-  marker ^= ((uint32_t)APP_RADIO_E28_CHANNEL & 0xFFU) << 8;
-  marker ^= ((uint32_t)APP_RADIO_E28_OPTION & 0xFFU);
+  marker ^= ((uint32_t)g_app.radio_config.channel & 0xFFU) << 8;
+  marker ^= ((uint32_t)g_app.radio_config.option & 0xFFU);
   marker ^= ((uint32_t)APP_RADIO_E28_UART_BAUD_BITS & 0x07U) << 5;
   marker ^= ((uint32_t)APP_RADIO_E28_AIR_RATE_BITS & 0x07U) << 2;
   return marker;
@@ -541,6 +699,7 @@ static void App_ReadRadioFor(uint32_t wait_ms, bool forward_to_host)
   while ((HAL_GetTick() - start) < wait_ms)
   {
     App_ServiceWatchdog();
+    AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, HAL_GetTick());
     while (App_TryReadUart(g_app.hw.radio_uart, &byte))
     {
       if (g_app.radio_config_length < (uint16_t)sizeof(g_app.radio_config_bytes))
@@ -595,39 +754,31 @@ static void App_ServiceWatchdog(void)
 #if APP_UART_STARTUP_BANNER
 static void App_SendStartupBanner(void)
 {
-  const uint8_t radio_banner[] = "USART1 RADIO READY\r\n";
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
-  const uint8_t host1_banner[] = "USART2 HOST READY ROLE=MASTER\r\n";
-#else
-  const uint8_t host1_banner[] = "USART2 HOST READY ROLE=SLAVE\r\n";
-#endif
-  const uint8_t host2_banner[] = "USART3 UNUSED READY\r\n";
-
-  if (g_app.hw.radio_uart != NULL)
-  {
-    (void)HAL_UART_Transmit(g_app.hw.radio_uart,
-                            (uint8_t *)radio_banner,
-                            (uint16_t)(sizeof(radio_banner) - 1U),
-                            APP_UART_POLL_TIMEOUT_MS);
-  }
   if (g_app.hw.host_uart1 != NULL)
   {
-    (void)HAL_UART_Transmit(g_app.hw.host_uart1,
-                            (uint8_t *)host1_banner,
-                            (uint16_t)(sizeof(host1_banner) - 1U),
-                            APP_UART_POLL_TIMEOUT_MS);
-  }
-  if (g_app.hw.host_uart2 != NULL)
-  {
-    (void)HAL_UART_Transmit(g_app.hw.host_uart2,
-                            (uint8_t *)host2_banner,
-                            (uint16_t)(sizeof(host2_banner) - 1U),
-                            APP_UART_POLL_TIMEOUT_MS);
+    App_WriteHostString("\r\n=== E28 ONE-TO-MANY v1.3 ===\r\n");
+    App_WriteHostString("USART2 HOST READY\r\n");
+
+    // 显示E28配置状态
+    if (g_app_diag_radio_config_first_boot_count > 0)
+    {
+      App_WriteHostString("E28 RECONFIG COUNT: ");
+      App_WriteHostHex16((uint16_t)g_app_diag_radio_config_first_boot_count);
+      App_WriteHostString("\r\n");
+    }
+    else
+    {
+      App_WriteHostString("E28 RECONFIG: SKIPPED\r\n");
+    }
+
+    App_PrintRuntimeConfig();
+    App_WriteHostString("============================\r\n");
+    App_WriteHostString("CONFIG APPLIED OK\r\n");
   }
 }
 #endif
 
-#if APP_UART_SELF_TEST_ECHO || !APP_RADIO_FILTER_ENABLE
+#if APP_UART_SELF_TEST_ECHO
 static void App_PumpUart(UART_HandleTypeDef *source, UART_HandleTypeDef *target)
 {
   uint8_t byte;
@@ -668,31 +819,70 @@ static void App_PumpHostToRadio(void)
 static void App_ForwardHostByte(uint8_t byte)
 {
   App_WriteUart(g_app.hw.radio_uart, byte);
-#if APP_RADIO_FILTER_ENABLE
-  App_FrameParserFeed(&g_app.host_frame_parser, byte, false);
-#endif
+  if (App_RadioFilterIsEnabled())
+  {
+    App_FrameParserFeed(&g_app.host_frame_parser, byte, false);
+  }
 }
 
 #if APP_HOST_CFG_COMMAND_ENABLE
 static bool App_TryHandleHostConfigByte(uint8_t byte)
 {
+  const uint8_t prefix[] = {'+', '+', '+'};
+
+  // Check for +++ prefix to enter config mode
+  if (!g_app.cfg_mode_active)
+  {
+    if (byte == prefix[g_app.cfg_mode_prefix_index])
+    {
+      g_app.cfg_mode_prefix_index++;
+      if (g_app.cfg_mode_prefix_index >= sizeof(prefix))
+      {
+        g_app.cfg_mode_active = true;
+        g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+        g_app.cfg_mode_prefix_index = 0;
+        g_app.host_cfg_command_length = 0;
+        App_WriteHostString("OK CFG MODE\r\n");
+      }
+      return true;
+    }
+    else
+    {
+      // Not the prefix, forward accumulated '+' and current byte
+      for (uint8_t i = 0; i < g_app.cfg_mode_prefix_index; i++)
+      {
+        App_ForwardHostByte(prefix[i]);
+      }
+      g_app.cfg_mode_prefix_index = 0;
+
+      // Forward current byte as well
+      App_ForwardHostByte(byte);
+      return true;
+    }
+  }
+
+  // In config mode, handle CFG commands
   if (g_app.host_cfg_command_length == 0U)
   {
     if (byte != (uint8_t)'C')
     {
-      return false;
+      // Not a CFG command, just consume the byte
+      return true;
     }
     g_app.host_cfg_command[g_app.host_cfg_command_length++] = byte;
+    g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
     return true;
   }
 
   if (g_app.host_cfg_command_length >= (uint16_t)sizeof(g_app.host_cfg_command))
   {
     App_FlushHostConfigCommand();
-    return false;
+    return true;
   }
 
   g_app.host_cfg_command[g_app.host_cfg_command_length++] = byte;
+  g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+
   if (!App_ConfigCommandPrefixMatches())
   {
     App_FlushHostConfigCommand();
@@ -711,18 +901,16 @@ static bool App_TryHandleHostConfigByte(uint8_t byte)
 
 static void App_FlushHostConfigCommand(void)
 {
-  uint16_t index;
-
-  for (index = 0U; index < g_app.host_cfg_command_length; ++index)
-  {
-    App_ForwardHostByte(g_app.host_cfg_command[index]);
-  }
+  // In config mode, just discard invalid commands, don't forward
   g_app.host_cfg_command_length = 0U;
 }
 
 static void App_ProcessHostConfigCommand(void)
 {
-  uint8_t local_id = 0U;
+  char key[8];
+  uint16_t value = 0U;
+  uint32_t role = APP_RADIO_ROLE_SLAVE;
+  bool hex_prefixed = false;
 
   if ((g_app.host_cfg_command_length >= 4U) &&
       (g_app.host_cfg_command[0] == (uint8_t)'C') &&
@@ -737,43 +925,116 @@ static void App_ProcessHostConfigCommand(void)
         (g_app.host_cfg_command[3] == (uint8_t)'\r') ||
         (g_app.host_cfg_command[3] == (uint8_t)'\n'))
     {
-      App_WriteHostString("CFG ROLE=");
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
-      App_WriteHostString("MASTER ID=");
-#else
-      App_WriteHostString("SLAVE ID=");
-#endif
-      App_WriteHostHex16(App_RadioLocalFrameId());
-      App_WriteHostString(" E28=");
-      App_WriteHostHex16(App_E28LocalAddress());
-      App_WriteHostString("\r\n");
+      App_PrintRuntimeConfig();
     }
-    else if (App_ParseConfigId(&local_id))
+    else if (App_ParseConfigRole(&role))
     {
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_SLAVE
-      if (local_id == g_app.radio_local_id)
+      g_app.radio_config.role = role;
+      App_WriteHostString("OK\r\n");
+    }
+    else if (App_ParseConfigAssignment(key, (uint16_t)sizeof(key), &value, &hex_prefixed))
+    {
+      if (strcmp(key, "ID") == 0)
       {
-        App_WriteHostString("OK ID UNCHANGED\r\n");
-      }
-      else
-      {
-        g_app.radio_local_id = local_id;
-        App_WriteRadioConfigStorage(false);
-        if (App_ConfigureRadioOnFirstBoot())
+        if ((value < 1U) || (value > 0xFEU))
         {
-          App_WriteHostString("OK ID SAVED ");
-          App_WriteHostHex16(g_app.radio_local_id);
-          App_WriteHostString("\r\n");
+          App_WriteHostString("ERR ID_RANGE\r\n");
         }
         else
         {
-          App_WriteHostString("ERR RADIO_CONFIG\r\n");
+          g_app.radio_config.local_id = value;
+          App_WriteHostString("OK\r\n");
         }
       }
-#else
-      (void)local_id;
-      App_WriteHostString("ERR ROLE_MASTER\r\n");
-#endif
+      else if (strcmp(key, "REMOTE") == 0)
+      {
+        if ((value < 1U) || (value > 0xFEU))
+        {
+          App_WriteHostString("ERR REMOTE_RANGE\r\n");
+        }
+        else
+        {
+          g_app.radio_config.remote_id = value;
+          App_WriteHostString("OK\r\n");
+        }
+      }
+      else if (strcmp(key, "CH") == 0)
+      {
+        if (!hex_prefixed && (value <= 99U))
+        {
+          value = (uint16_t)(((value / 10U) << 4) | (value % 10U));
+        }
+        if (value > 0xFFU)
+        {
+          App_WriteHostString("ERR CH_RANGE\r\n");
+        }
+        else
+        {
+          g_app.radio_config.channel = value;
+          App_WriteHostString("OK\r\n");
+        }
+      }
+      else if (strcmp(key, "OPTION") == 0)
+      {
+        if (!hex_prefixed && (value <= 99U))
+        {
+          value = (uint16_t)(((value / 10U) << 4) | (value % 10U));
+        }
+        if (value > 0xFFU)
+        {
+          App_WriteHostString("ERR OPTION_RANGE\r\n");
+        }
+        else
+        {
+          g_app.radio_config.option = value;
+          App_WriteHostString("OK\r\n");
+        }
+      }
+      else if (strcmp(key, "FILTER") == 0)
+      {
+        if (value > 1U)
+        {
+          App_WriteHostString("ERR FILTER_RANGE\r\n");
+        }
+        else
+        {
+          g_app.radio_config.filter_enable = value;
+          App_WriteHostString("OK\r\n");
+        }
+      }
+      else if (strcmp(key, "ACK") == 0)
+      {
+        if (value > 1U)
+        {
+          App_WriteHostString("ERR ACK_RANGE\r\n");
+        }
+        else
+        {
+          g_app.radio_config.ack_enable = value;
+          App_WriteHostString("OK\r\n");
+        }
+      }
+      else
+      {
+        App_WriteHostString("ERR KEY\r\n");
+      }
+    }
+    else if ((g_app.host_cfg_command_length >= 9U) &&
+             (memcmp(&g_app.host_cfg_command[4], "SAVE", 4U) == 0))
+    {
+      App_WriteRadioConfigStorage(false);
+      App_WriteHostString("OK SAVED, REBOOTING...\r\n");
+      App_ExitCfgMode();
+      HAL_Delay(50);
+      IWDG->KR = 0xAAAAU;
+      NVIC_SystemReset();
+    }
+    else if ((g_app.host_cfg_command_length >= 12U) &&
+             (memcmp(&g_app.host_cfg_command[4], "DEFAULT", 7U) == 0))
+    {
+      App_LoadRadioDefaultConfig();
+      App_WriteRadioConfigStorage(false);
+      App_WriteHostString("OK\r\n");
     }
     else
     {
@@ -812,13 +1073,16 @@ static bool App_ConfigCommandPrefixMatches(void)
   return true;
 }
 
-static bool App_ParseConfigId(uint8_t *local_id)
+static bool App_ParseConfigAssignment(char *key,
+                                      uint16_t key_size,
+                                      uint16_t *value,
+                                      bool *hex_prefixed)
 {
   uint16_t index = 4U;
-  uint16_t value = 0U;
-  bool has_digit = false;
+  uint16_t key_index = 0U;
+  uint16_t value_start;
 
-  if (local_id == NULL)
+  if ((key == NULL) || (key_size == 0U) || (value == NULL) || (hex_prefixed == NULL))
   {
     return false;
   }
@@ -828,42 +1092,129 @@ static bool App_ParseConfigId(uint8_t *local_id)
   {
     ++index;
   }
-  if ((index + 2U >= g_app.host_cfg_command_length) ||
-      (g_app.host_cfg_command[index] != (uint8_t)'I') ||
-      (g_app.host_cfg_command[index + 1U] != (uint8_t)'D') ||
-      (g_app.host_cfg_command[index + 2U] != (uint8_t)' '))
+  while ((index < g_app.host_cfg_command_length) &&
+         (g_app.host_cfg_command[index] != (uint8_t)'='))
+  {
+    if (key_index + 1U >= key_size)
+    {
+      return false;
+    }
+    key[key_index++] = (char)g_app.host_cfg_command[index++];
+  }
+  if ((key_index == 0U) || (index >= g_app.host_cfg_command_length))
   {
     return false;
   }
-  index += 3U;
+  key[key_index] = '\0';
+  value_start = (uint16_t)(index + 1U);
+  *hex_prefixed = ((value_start + 1U) < g_app.host_cfg_command_length) &&
+                  (g_app.host_cfg_command[value_start] == (uint8_t)'0') &&
+                  ((g_app.host_cfg_command[value_start + 1U] == (uint8_t)'x') ||
+                   (g_app.host_cfg_command[value_start + 1U] == (uint8_t)'X'));
+  return App_ParseConfigNumber(&g_app.host_cfg_command[value_start],
+                               (uint16_t)(g_app.host_cfg_command_length - value_start),
+                               value);
+}
 
-  while (index < g_app.host_cfg_command_length)
+static bool App_ParseConfigRole(uint32_t *role)
+{
+  if (role == NULL)
   {
-    const uint8_t ch = g_app.host_cfg_command[index++];
+    return false;
+  }
+  if ((g_app.host_cfg_command_length >= 15U) &&
+      (memcmp(&g_app.host_cfg_command[4], "ROLE=MASTER", 11U) == 0))
+  {
+    *role = APP_RADIO_ROLE_MASTER;
+    return true;
+  }
+  if ((g_app.host_cfg_command_length >= 14U) &&
+      (memcmp(&g_app.host_cfg_command[4], "ROLE=SLAVE", 10U) == 0))
+  {
+    *role = APP_RADIO_ROLE_SLAVE;
+    return true;
+  }
+  return false;
+}
+
+static bool App_ParseConfigNumber(const uint8_t *bytes, uint16_t length, uint16_t *value)
+{
+  uint16_t index = 0U;
+  uint16_t parsed = 0U;
+  bool has_digit = false;
+  bool hex = false;
+
+  if ((bytes == NULL) || (value == NULL))
+  {
+    return false;
+  }
+
+  if ((length >= 2U) && (bytes[0] == (uint8_t)'0') &&
+      ((bytes[1] == (uint8_t)'x') || (bytes[1] == (uint8_t)'X')))
+  {
+    hex = true;
+    index = 2U;
+  }
+
+  for (; index < length; ++index)
+  {
+    const uint8_t ch = bytes[index];
+    uint8_t digit;
 
     if ((ch == (uint8_t)'\r') || (ch == (uint8_t)'\n'))
     {
       break;
     }
-    if ((ch < (uint8_t)'0') || (ch > (uint8_t)'9'))
+    if ((ch >= (uint8_t)'0') && (ch <= (uint8_t)'9'))
+    {
+      digit = (uint8_t)(ch - (uint8_t)'0');
+    }
+    else if (hex && (ch >= (uint8_t)'A') && (ch <= (uint8_t)'F'))
+    {
+      digit = (uint8_t)(10U + ch - (uint8_t)'A');
+    }
+    else if (hex && (ch >= (uint8_t)'a') && (ch <= (uint8_t)'f'))
+    {
+      digit = (uint8_t)(10U + ch - (uint8_t)'a');
+    }
+    else
     {
       return false;
     }
+
     has_digit = true;
-    value = (uint16_t)((value * 10U) + (uint16_t)(ch - (uint8_t)'0'));
-    if (value > 0xFEU)
-    {
-      return false;
-    }
+    parsed = hex ? (uint16_t)((parsed << 4) | digit)
+                 : (uint16_t)((parsed * 10U) + digit);
   }
 
-  if (!has_digit || (value == 0U))
+  if (!has_digit)
   {
     return false;
   }
 
-  *local_id = (uint8_t)value;
+  *value = parsed;
   return true;
+}
+
+static void App_PrintRuntimeConfig(void)
+{
+  App_WriteHostString("CFG ROLE=");
+  App_WriteHostString(App_RadioRoleIsMaster() ? "MASTER" : "SLAVE");
+  App_WriteHostString(" ID=");
+  App_WriteHostHex16(App_RadioLocalFrameId());
+  App_WriteHostString(" REMOTE=");
+  App_WriteHostHex16((uint16_t)g_app.radio_config.remote_id);
+  App_WriteHostString(" CH=");
+  App_WriteHostHex16((uint16_t)g_app.radio_config.channel);
+  App_WriteHostString(" OPTION=");
+  App_WriteHostHex16((uint16_t)g_app.radio_config.option);
+  App_WriteHostString(" FILTER=");
+  App_WriteHostString(App_RadioFilterIsEnabled() ? "1" : "0");
+  App_WriteHostString(" ACK=");
+  App_WriteHostString(App_RadioAckIsEnabled() ? "1" : "0");
+  App_WriteHostString(" E28=");
+  App_WriteHostHex16(App_E28LocalAddress());
+  App_WriteHostString("\r\n");
 }
 
 static void App_WriteHostString(const char *text)
@@ -886,11 +1237,27 @@ static void App_WriteHostHex16(uint16_t value)
   out[3] = hex[value & 0x0FU];
   App_WriteBytes(g_app.hw.host_uart1, (const uint8_t *)out, (uint16_t)sizeof(out));
 }
+
+static void App_ExitCfgMode(void)
+{
+  g_app.cfg_mode_active = false;
+  g_app.cfg_mode_prefix_index = 0;
+  g_app.host_cfg_command_length = 0;
+  App_WriteHostString("EXIT CFG MODE\r\n");
+}
+
+static void App_CheckCfgModeTimeout(void)
+{
+  if (g_app.cfg_mode_active &&
+      ((int32_t)(HAL_GetTick() - g_app.cfg_mode_deadline_ms) >= 0))
+  {
+    App_ExitCfgMode();
+  }
+}
 #endif
 
 static void App_PumpRadioToHost(void)
 {
-#if APP_RADIO_FILTER_ENABLE
   uint8_t byte;
 
   if ((g_app.hw.radio_uart == NULL) || (g_app.hw.host_uart1 == NULL))
@@ -900,11 +1267,15 @@ static void App_PumpRadioToHost(void)
 
   while (App_TryReadUart(g_app.hw.radio_uart, &byte))
   {
-    App_FrameParserFeed(&g_app.radio_frame_parser, byte, true);
+    if (App_RadioFilterIsEnabled())
+    {
+      App_FrameParserFeed(&g_app.radio_frame_parser, byte, true);
+    }
+    else
+    {
+      App_WriteUart(g_app.hw.host_uart1, byte);
+    }
   }
-#else
-  App_PumpUart(g_app.hw.radio_uart, g_app.hw.host_uart1);
-#endif
 }
 
 static void App_FrameParserFeed(app_frame_parser_t *parser, uint8_t byte, bool from_radio)
@@ -1001,13 +1372,16 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
     ++g_app_diag_frame_rx_count;
     App_WriteBytes(g_app.hw.host_uart1, frame, length);
 
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_SLAVE
-    if ((target == App_RadioLocalFrameId()) && !is_ack)
+    if (App_RadioRoleIsSlave() &&
+        App_RadioAckIsEnabled() &&
+        (target == App_RadioLocalFrameId()) &&
+        !is_ack)
     {
       App_SendAck(seq, cmd);
     }
-#else
-    if (is_ack &&
+    if (App_RadioRoleIsMaster() &&
+        App_RadioAckIsEnabled() &&
+        is_ack &&
         g_app.pending_ack.active &&
         (frame[3] == g_app.pending_ack.target) &&
         (seq == g_app.pending_ack.seq) &&
@@ -1016,16 +1390,16 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
       g_app.pending_ack.active = false;
       ++g_app_diag_frame_ack_rx_count;
     }
-#endif
   }
   else
   {
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
-    if ((target != APP_FRAME_TARGET_BROADCAST) && !is_ack)
+    if (App_RadioRoleIsMaster() &&
+        App_RadioAckIsEnabled() &&
+        (target != APP_FRAME_TARGET_BROADCAST) &&
+        !is_ack)
     {
       App_RecordPendingAck(target, seq, cmd);
     }
-#endif
   }
 }
 
@@ -1076,14 +1450,13 @@ static uint8_t App_FrameChecksum(const uint8_t *bytes, uint16_t length)
   return sum;
 }
 
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_SLAVE
 static void App_SendAck(uint8_t request_seq, uint8_t request_cmd)
 {
   uint8_t ack[8];
 
   ack[0] = APP_FRAME_HEAD;
   ack[1] = 5U;
-  ack[2] = (uint8_t)APP_RADIO_MASTER_ID;
+  ack[2] = (uint8_t)g_app.radio_config.remote_id;
   ack[3] = App_RadioLocalFrameId();
   ack[4] = request_seq;
   ack[5] = (uint8_t)(request_cmd | APP_FRAME_CMD_ACK_BASE);
@@ -1092,9 +1465,7 @@ static void App_SendAck(uint8_t request_seq, uint8_t request_cmd)
   App_SendRadioBytes(ack, (uint16_t)sizeof(ack));
   ++g_app_diag_frame_ack_tx_count;
 }
-#endif
 
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
 static void App_RecordPendingAck(uint8_t target, uint8_t seq, uint8_t cmd)
 {
   g_app.pending_ack.active = true;
@@ -1103,18 +1474,17 @@ static void App_RecordPendingAck(uint8_t target, uint8_t seq, uint8_t cmd)
   g_app.pending_ack.cmd = cmd;
   g_app.pending_ack.deadline_ms = HAL_GetTick() + APP_FRAME_ACK_TIMEOUT_MS;
 }
-#endif
 
 static void App_CheckPendingAckTimeout(void)
 {
-#if APP_RADIO_DEVICE_ROLE == APP_RADIO_ROLE_MASTER
-  if (g_app.pending_ack.active &&
+  if (App_RadioRoleIsMaster() &&
+      App_RadioAckIsEnabled() &&
+      g_app.pending_ack.active &&
       ((int32_t)(HAL_GetTick() - g_app.pending_ack.deadline_ms) >= 0))
   {
     g_app.pending_ack.active = false;
     ++g_app_diag_frame_ack_timeout_count;
   }
-#endif
 }
 
 static bool App_TryReadUart(UART_HandleTypeDef *source, uint8_t *byte)

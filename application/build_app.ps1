@@ -1,38 +1,13 @@
-param(
-  [ValidateSet('slave', 'master')]
-  [string]$Role = 'slave',
-  [int]$LocalId = 0,
-  [int]$RemoteId = 0
-)
-
 $ErrorActionPreference = 'Stop'
 
 $gcc = 'arm-none-eabi-gcc'
 $objcopy = 'arm-none-eabi-objcopy'
 $size = 'arm-none-eabi-size'
-$build = "..\build\application-$Role"
+$build = '..\build\application'
 $output = '..\build\application'
 
 New-Item -ItemType Directory -Force -Path $build | Out-Null
 New-Item -ItemType Directory -Force -Path $output | Out-Null
-
-if ($Role -eq 'master') {
-  if ($LocalId -eq 0) { $LocalId = 1 }
-  if ($RemoteId -eq 0) { $RemoteId = 2 }
-  $roleDefines = @(
-    '-DAPP_RADIO_DEVICE_ROLE=APP_RADIO_ROLE_MASTER',
-    "-DAPP_RADIO_LOCAL_ID=${LocalId}U",
-    "-DAPP_RADIO_REMOTE_ID=${RemoteId}U"
-  )
-} else {
-  if ($LocalId -eq 0) { $LocalId = 1 }
-  if ($RemoteId -eq 0) { $RemoteId = 1 }
-  $roleDefines = @(
-    '-DAPP_RADIO_DEVICE_ROLE=APP_RADIO_ROLE_SLAVE',
-    "-DAPP_RADIO_LOCAL_ID=${LocalId}U",
-    "-DAPP_RADIO_REMOTE_ID=${RemoteId}U"
-  )
-}
 
 $cflags = @(
   '-mcpu=cortex-m3',
@@ -41,7 +16,6 @@ $cflags = @(
   '-DSTM32F103xB',
   '-DUSER_VECT_TAB_ADDRESS',
   '-DVECT_TAB_OFFSET=0x00004000U',
-  $roleDefines,
   '-ICore/Inc',
   '-IApp/Inc',
   '-IFramework/Inc',
@@ -103,9 +77,3 @@ if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $objcopy -O binary -S $elf $bin
 
 Get-ChildItem "$build\application.*" | Select-Object Name,Length
-
-Copy-Item -LiteralPath $elf -Destination (Join-Path $output "application-$Role.elf") -Force
-Copy-Item -LiteralPath $hex -Destination (Join-Path $output "application-$Role.hex") -Force
-Copy-Item -LiteralPath $bin -Destination (Join-Path $output "application-$Role.bin") -Force
-Copy-Item -LiteralPath (Join-Path $build 'application.map') -Destination (Join-Path $output "application-$Role.map") -Force
-Copy-Item -LiteralPath $hex -Destination (Join-Path $output 'application.hex') -Force
