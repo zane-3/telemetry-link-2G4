@@ -52,6 +52,9 @@ typedef struct
 #if APP_HOST_CFG_COMMAND_ENABLE
   uint8_t host_cfg_command[APP_HOST_CFG_COMMAND_BUFFER];
   uint16_t host_cfg_command_length;
+  bool cfg_mode_active;
+  uint32_t cfg_mode_deadline_ms;
+  uint8_t cfg_mode_prefix_index;
 #endif
 } app_state_t;
 
@@ -128,6 +131,8 @@ static bool App_ApplyRadioRuntimeConfig(void);
 static void App_PrintRuntimeConfig(void);
 static void App_WriteHostString(const char *text);
 static void App_WriteHostHex16(uint16_t value);
+static void App_ExitCfgMode(void);
+static void App_CheckCfgModeTimeout(void);
 #endif
 static void App_FrameParserFeed(app_frame_parser_t *parser, uint8_t byte, bool from_radio);
 static void App_FrameParserReset(app_frame_parser_t *parser);
@@ -145,6 +150,12 @@ void App_Init(const app_hw_t *hw)
   g_app.hw = *hw;
   App_LoadRadioDefaultConfig();
   App_LoadRadioRuntimeConfig();
+
+#if APP_HOST_CFG_COMMAND_ENABLE
+  g_app.cfg_mode_active = false;
+  g_app.cfg_mode_prefix_index = 0;
+  g_app.host_cfg_command_length = 0;
+#endif
 
   AppFrameworkLed_Init(&g_app.sys_led,
                        g_app.hw.sys_led_port,
@@ -171,6 +182,9 @@ void App_Run(void)
   App_PumpHostToRadio();
   App_PumpRadioToHost();
   App_CheckPendingAckTimeout();
+#if APP_HOST_CFG_COMMAND_ENABLE
+  App_CheckCfgModeTimeout();
+#endif
 #endif
   AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, now);
 }
@@ -198,6 +212,7 @@ static void App_WaitRadioModeSwitch(void)
   while ((HAL_GetTick() - start) < APP_RADIO_MODE_SWITCH_WAIT_MS)
   {
     App_ServiceWatchdog();
+    AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, HAL_GetTick());
     if ((g_app.hw.radio_aux_port != NULL) &&
         (HAL_GPIO_ReadPin(g_app.hw.radio_aux_port, g_app.hw.radio_aux_pin) == GPIO_PIN_SET))
     {
@@ -213,15 +228,32 @@ static bool App_ConfigureRadioOnFirstBoot(void)
   bool configured = false;
   const bool forward_to_host = (APP_RADIO_CONFIG_FIRST_BOOT_FORWARD != 0U);
 
-  if ((g_app.hw.radio_uart == NULL) || App_RadioConfigMarkerIsWritten())
+  if (g_app.hw.radio_uart == NULL)
   {
     return true;
   }
 
+  // 强制每次重启都重新配置E28，确保配置生效
+  // if (App_RadioConfigMarkerIsWritten())
+  // {
+  //   return true;
+  // }
+
   ++g_app_diag_radio_config_first_boot_count;
+
+  // 诊断输出
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 CONFIGURING...\r\n");
+  }
+
   App_ReadRadioFor(APP_RADIO_CONFIG_STARTUP_WAIT_MS, forward_to_host);
   if (!App_FindRadioCommandBaudrate(&active_baudrate, forward_to_host))
   {
+    if (g_app.hw.host_uart1 != NULL)
+    {
+      App_WriteHostString("E28 CONFIG FAILED: BAUDRATE NOT FOUND\r\n");
+    }
     (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
     App_ConfigureRadioTransparentMode();
     return false;
@@ -235,7 +267,18 @@ static bool App_ConfigureRadioOnFirstBoot(void)
   }
   if (configured)
   {
+    if (g_app.hw.host_uart1 != NULL)
+    {
+      App_WriteHostString("E28 CONFIG OK\r\n");
+    }
     App_WriteRadioConfigMarker();
+  }
+  else
+  {
+    if (g_app.hw.host_uart1 != NULL)
+    {
+      App_WriteHostString("E28 CONFIG FAILED: VERIFY FAILED\r\n");
+    }
   }
   (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
   App_ConfigureRadioTransparentMode();
@@ -451,18 +494,55 @@ static bool App_E28WriteConfig(bool forward_to_host)
 {
   uint8_t frame[6];
 
+  // 步骤1：发送配置命令（0xC0）
   App_E28BuildConfigFrame(0xC0U, frame);
   App_SendRadioBytes(frame, (uint16_t)sizeof(frame));
   App_ReadRadioFor(APP_RADIO_CONFIG_CMD_WAIT_MS, false);
-  if (App_E28ResponseMatchesConfig())
+
+  if (!App_E28ResponseMatchesConfig())
   {
-    if (forward_to_host)
+    if (g_app.hw.host_uart1 != NULL)
     {
-      App_WriteHostHexDump(g_app.radio_config_bytes, g_app.radio_config_length);
+      App_WriteHostString("E28 WRITE CONFIG FAILED\r\n");
     }
-    return true;
+    return false;
   }
-  return false;
+
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 WRITE CONFIG OK\r\n");
+  }
+
+  // 步骤2：发送保存命令（0xC2）保存到Flash
+  frame[0] = 0xC2U;  // SAVE command
+  frame[1] = 0xC2U;
+  frame[2] = 0xC2U;
+  App_SendRadioBytes(frame, 3);
+  HAL_Delay(200);  // 等待保存完成
+
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 SAVE SENT\r\n");
+  }
+
+  // 步骤3：复位模块使配置生效
+  frame[0] = 0xC3U;  // RESET command
+  frame[1] = 0xC3U;
+  frame[2] = 0xC3U;
+  App_SendRadioBytes(frame, 3);
+  HAL_Delay(1000);  // 等待复位完成（增加到1秒）
+
+  if (g_app.hw.host_uart1 != NULL)
+  {
+    App_WriteHostString("E28 RESET SENT\r\n");
+  }
+
+  if (forward_to_host)
+  {
+    App_WriteHostHexDump(g_app.radio_config_bytes, g_app.radio_config_length);
+  }
+
+  return true;
 }
 
 static void App_E28BuildConfigFrame(uint8_t head, uint8_t frame[6])
@@ -620,6 +700,7 @@ static void App_ReadRadioFor(uint32_t wait_ms, bool forward_to_host)
   while ((HAL_GetTick() - start) < wait_ms)
   {
     App_ServiceWatchdog();
+    AppFrameworkLed_Update(&g_app.sys_led, true, APP_SYS_LED_TOGGLE_MS, HAL_GetTick());
     while (App_TryReadUart(g_app.hw.radio_uart, &byte))
     {
       if (g_app.radio_config_length < (uint16_t)sizeof(g_app.radio_config_bytes))
@@ -674,30 +755,26 @@ static void App_ServiceWatchdog(void)
 #if APP_UART_STARTUP_BANNER
 static void App_SendStartupBanner(void)
 {
-  const uint8_t radio_banner[] = "USART1 RADIO READY\r\n";
-  const uint8_t host1_banner[] = "USART2 HOST READY\r\n";
-  const uint8_t host2_banner[] = "USART3 UNUSED READY\r\n";
-
-  if (g_app.hw.radio_uart != NULL)
-  {
-    (void)HAL_UART_Transmit(g_app.hw.radio_uart,
-                            (uint8_t *)radio_banner,
-                            (uint16_t)(sizeof(radio_banner) - 1U),
-                            APP_UART_POLL_TIMEOUT_MS);
-  }
   if (g_app.hw.host_uart1 != NULL)
   {
-    (void)HAL_UART_Transmit(g_app.hw.host_uart1,
-                            (uint8_t *)host1_banner,
-                            (uint16_t)(sizeof(host1_banner) - 1U),
-                            APP_UART_POLL_TIMEOUT_MS);
-  }
-  if (g_app.hw.host_uart2 != NULL)
-  {
-    (void)HAL_UART_Transmit(g_app.hw.host_uart2,
-                            (uint8_t *)host2_banner,
-                            (uint16_t)(sizeof(host2_banner) - 1U),
-                            APP_UART_POLL_TIMEOUT_MS);
+    App_WriteHostString("\r\n=== E28 ONE-TO-MANY v1.3 ===\r\n");
+    App_WriteHostString("USART2 HOST READY\r\n");
+
+    // 显示E28配置状态
+    if (g_app_diag_radio_config_first_boot_count > 0)
+    {
+      App_WriteHostString("E28 RECONFIG COUNT: ");
+      App_WriteHostHex16((uint16_t)g_app_diag_radio_config_first_boot_count);
+      App_WriteHostString("\r\n");
+    }
+    else
+    {
+      App_WriteHostString("E28 RECONFIG: SKIPPED\r\n");
+    }
+
+    App_PrintRuntimeConfig();
+    App_WriteHostString("============================\r\n");
+    App_WriteHostString("CONFIG APPLIED OK\r\n");
   }
 }
 #endif
@@ -752,23 +829,61 @@ static void App_ForwardHostByte(uint8_t byte)
 #if APP_HOST_CFG_COMMAND_ENABLE
 static bool App_TryHandleHostConfigByte(uint8_t byte)
 {
+  const uint8_t prefix[] = {'+', '+', '+'};
+
+  // Check for +++ prefix to enter config mode
+  if (!g_app.cfg_mode_active)
+  {
+    if (byte == prefix[g_app.cfg_mode_prefix_index])
+    {
+      g_app.cfg_mode_prefix_index++;
+      if (g_app.cfg_mode_prefix_index >= sizeof(prefix))
+      {
+        g_app.cfg_mode_active = true;
+        g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+        g_app.cfg_mode_prefix_index = 0;
+        g_app.host_cfg_command_length = 0;
+        App_WriteHostString("OK CFG MODE\r\n");
+      }
+      return true;
+    }
+    else
+    {
+      // Not the prefix, forward accumulated '+' and current byte
+      for (uint8_t i = 0; i < g_app.cfg_mode_prefix_index; i++)
+      {
+        App_ForwardHostByte(prefix[i]);
+      }
+      g_app.cfg_mode_prefix_index = 0;
+
+      // Forward current byte as well
+      App_ForwardHostByte(byte);
+      return true;
+    }
+  }
+
+  // In config mode, handle CFG commands
   if (g_app.host_cfg_command_length == 0U)
   {
     if (byte != (uint8_t)'C')
     {
-      return false;
+      // Not a CFG command, just consume the byte
+      return true;
     }
     g_app.host_cfg_command[g_app.host_cfg_command_length++] = byte;
+    g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
     return true;
   }
 
   if (g_app.host_cfg_command_length >= (uint16_t)sizeof(g_app.host_cfg_command))
   {
     App_FlushHostConfigCommand();
-    return false;
+    return true;
   }
 
   g_app.host_cfg_command[g_app.host_cfg_command_length++] = byte;
+  g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+
   if (!App_ConfigCommandPrefixMatches())
   {
     App_FlushHostConfigCommand();
@@ -787,12 +902,7 @@ static bool App_TryHandleHostConfigByte(uint8_t byte)
 
 static void App_FlushHostConfigCommand(void)
 {
-  uint16_t index;
-
-  for (index = 0U; index < g_app.host_cfg_command_length; ++index)
-  {
-    App_ForwardHostByte(g_app.host_cfg_command[index]);
-  }
+  // In config mode, just discard invalid commands, don't forward
   g_app.host_cfg_command_length = 0U;
 }
 
@@ -821,7 +931,6 @@ static void App_ProcessHostConfigCommand(void)
     else if (App_ParseConfigRole(&role))
     {
       g_app.radio_config.role = role;
-      App_WriteRadioConfigStorage(false);
       App_WriteHostString("OK\r\n");
     }
     else if (App_ParseConfigAssignment(key, (uint16_t)sizeof(key), &value, &hex_prefixed))
@@ -835,7 +944,6 @@ static void App_ProcessHostConfigCommand(void)
         else
         {
           g_app.radio_config.local_id = value;
-          App_WriteRadioConfigStorage(false);
           App_WriteHostString("OK\r\n");
         }
       }
@@ -848,7 +956,6 @@ static void App_ProcessHostConfigCommand(void)
         else
         {
           g_app.radio_config.remote_id = value;
-          App_WriteRadioConfigStorage(false);
           App_WriteHostString("OK\r\n");
         }
       }
@@ -865,7 +972,6 @@ static void App_ProcessHostConfigCommand(void)
         else
         {
           g_app.radio_config.channel = value;
-          App_WriteRadioConfigStorage(false);
           App_WriteHostString("OK\r\n");
         }
       }
@@ -882,7 +988,6 @@ static void App_ProcessHostConfigCommand(void)
         else
         {
           g_app.radio_config.option = value;
-          App_WriteRadioConfigStorage(false);
           App_WriteHostString("OK\r\n");
         }
       }
@@ -895,7 +1000,6 @@ static void App_ProcessHostConfigCommand(void)
         else
         {
           g_app.radio_config.filter_enable = value;
-          App_WriteRadioConfigStorage(false);
           App_WriteHostString("OK\r\n");
         }
       }
@@ -908,7 +1012,6 @@ static void App_ProcessHostConfigCommand(void)
         else
         {
           g_app.radio_config.ack_enable = value;
-          App_WriteRadioConfigStorage(false);
           App_WriteHostString("OK\r\n");
         }
       }
@@ -920,21 +1023,12 @@ static void App_ProcessHostConfigCommand(void)
     else if ((g_app.host_cfg_command_length >= 9U) &&
              (memcmp(&g_app.host_cfg_command[4], "SAVE", 4U) == 0))
     {
-      App_WriteRadioConfigStorage(App_RadioConfigMarkerIsWritten());
-      App_WriteHostString("OK\r\n");
-    }
-    else if ((g_app.host_cfg_command_length >= 10U) &&
-             (memcmp(&g_app.host_cfg_command[4], "APPLY", 5U) == 0))
-    {
       App_WriteRadioConfigStorage(false);
-      if (App_ApplyRadioRuntimeConfig())
-      {
-        App_WriteHostString("OK\r\n");
-      }
-      else
-      {
-        App_WriteHostString("ERR RADIO_CONFIG\r\n");
-      }
+      App_WriteHostString("OK SAVED, REBOOTING...\r\n");
+      App_ExitCfgMode();
+      HAL_Delay(50);
+      IWDG->KR = 0xAAAAU;
+      NVIC_SystemReset();
     }
     else if ((g_app.host_cfg_command_length >= 12U) &&
              (memcmp(&g_app.host_cfg_command[4], "DEFAULT", 7U) == 0))
@@ -1029,13 +1123,13 @@ static bool App_ParseConfigRole(uint32_t *role)
   {
     return false;
   }
-  if ((g_app.host_cfg_command_length >= 16U) &&
+  if ((g_app.host_cfg_command_length >= 15U) &&
       (memcmp(&g_app.host_cfg_command[4], "ROLE=MASTER", 11U) == 0))
   {
     *role = APP_RADIO_ROLE_MASTER;
     return true;
   }
-  if ((g_app.host_cfg_command_length >= 15U) &&
+  if ((g_app.host_cfg_command_length >= 14U) &&
       (memcmp(&g_app.host_cfg_command[4], "ROLE=SLAVE", 10U) == 0))
   {
     *role = APP_RADIO_ROLE_SLAVE;
@@ -1155,6 +1249,23 @@ static void App_WriteHostHex16(uint16_t value)
   out[2] = hex[(value >> 4) & 0x0FU];
   out[3] = hex[value & 0x0FU];
   App_WriteBytes(g_app.hw.host_uart1, (const uint8_t *)out, (uint16_t)sizeof(out));
+}
+
+static void App_ExitCfgMode(void)
+{
+  g_app.cfg_mode_active = false;
+  g_app.cfg_mode_prefix_index = 0;
+  g_app.host_cfg_command_length = 0;
+  App_WriteHostString("EXIT CFG MODE\r\n");
+}
+
+static void App_CheckCfgModeTimeout(void)
+{
+  if (g_app.cfg_mode_active &&
+      ((int32_t)(HAL_GetTick() - g_app.cfg_mode_deadline_ms) >= 0))
+  {
+    App_ExitCfgMode();
+  }
 }
 #endif
 
