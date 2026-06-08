@@ -8,8 +8,6 @@ C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/
                               C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-findfp.o) (_fwalk_sglue)
 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-stdio.o)
                               C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-findfp.o) (__sread)
-C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
-                              ..\build\application-slave\app.o (memcmp)
 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
                               C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crt0.o (memset)
 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-closer.o)
@@ -28,8 +26,6 @@ C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/
                               C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crt0.o (__libc_init_array)
 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
                               C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-findfp.o) (__retarget_lock_init_recursive)
-C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
-                              ..\build\application-slave\app.o (strcmp)
 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
                               ..\build\application-slave\app.o (strlen)
 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
@@ -96,6 +92,10 @@ Discarded input sections
  .text          0x00000000        0x0 ..\build\application-slave\app.o
  .data          0x00000000        0x0 ..\build\application-slave\app.o
  .bss           0x00000000        0x0 ..\build\application-slave\app.o
+ .bss.g_app_diag_frame_ack_timeout_count
+                0x00000000        0x4 ..\build\application-slave\app.o
+ .bss.g_app_diag_frame_ack_rx_count
+                0x00000000        0x4 ..\build\application-slave\app.o
  .bss.g_app_diag_rtk_tag_rx_count
                 0x00000000        0x4 ..\build\application-slave\app.o
  .bss.g_app_diag_dt_tag_rx_count
@@ -545,9 +545,6 @@ Discarded input sections
  .debug_frame   0x00000000       0x8c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-stdio.o)
  .ARM.attributes
                 0x00000000       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-stdio.o)
- .text          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
- .data          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
- .bss           0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
  .text          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
  .data          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
  .bss           0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
@@ -636,9 +633,6 @@ Discarded input sections
                 0x00000000        0x1 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
  .bss.__lock___sfp_recursive_mutex
                 0x00000000        0x1 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
- .data          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
- .bss           0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
- .ARM.extab     0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
  .text          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
  .data          0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
  .bss           0x00000000        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
@@ -851,490 +845,457 @@ LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib
                 0x08004000                g_pfnVectors
                 0x0800410c                        . = ALIGN (0x4)
 
-.text           0x0800410c     0x3144
+.text           0x0800410c     0x27d0
                 0x0800410c                        . = ALIGN (0x4)
  *(.text)
- .text          0x0800410c      0x1bc C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
-                0x0800410c                strcmp
  *(.text*)
  .text.deregister_tm_clones
-                0x080042c8       0x1c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+                0x0800410c       0x1c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
  .text.register_tm_clones
-                0x080042e4       0x24 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+                0x08004128       0x24 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
  .text.__do_global_dtors_aux
-                0x08004308       0x28 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+                0x0800414c       0x28 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
  .text.frame_dummy
-                0x08004330       0x24 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+                0x08004174       0x24 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
  .text.AppWatchdog_Init
-                0x08004354       0x54 ..\build\application-slave\main.o
+                0x08004198       0x54 ..\build\application-slave\main.o
  .text.AppWatchdog_Refresh
-                0x080043a8       0x10 ..\build\application-slave\main.o
+                0x080041ec       0x10 ..\build\application-slave\main.o
  .text.MX_GPIO_Init
-                0x080043b8      0x104 ..\build\application-slave\main.o
+                0x080041fc      0x104 ..\build\application-slave\main.o
  .text.Error_Handler
-                0x080044bc        0x4 ..\build\application-slave\main.o
-                0x080044bc                Error_Handler
+                0x08004300        0x4 ..\build\application-slave\main.o
+                0x08004300                Error_Handler
  .text.MX_USART1_UART_Init
-                0x080044c0       0x34 ..\build\application-slave\main.o
+                0x08004304       0x34 ..\build\application-slave\main.o
  .text.MX_USART2_UART_Init
-                0x080044f4       0x34 ..\build\application-slave\main.o
+                0x08004338       0x34 ..\build\application-slave\main.o
  .text.MX_USART3_UART_Init
-                0x08004528       0x34 ..\build\application-slave\main.o
+                0x0800436c       0x34 ..\build\application-slave\main.o
  .text.SystemClock_Config
-                0x0800455c        0xe ..\build\application-slave\main.o
-                0x0800455c                SystemClock_Config
- *fill*         0x0800456a        0x2 
- .text.main     0x0800456c       0xac ..\build\application-slave\main.o
-                0x0800456c                main
- .text.App_RadioConfigCrc
-                0x08004618       0x4c ..\build\application-slave\app.o
+                0x080043a0        0xe ..\build\application-slave\main.o
+                0x080043a0                SystemClock_Config
+ *fill*         0x080043ae        0x2 
+ .text.main     0x080043b0       0xac ..\build\application-slave\main.o
+                0x080043b0                main
  .text.App_RadioConfigStorageIsValid
-                0x08004664       0x84 ..\build\application-slave\app.o
+                0x0800445c       0x38 ..\build\application-slave\app.o
  .text.App_LoadRadioRuntimeConfig
-                0x080046e8       0x28 ..\build\application-slave\app.o
- .text.App_RadioLocalFrameId
-                0x08004710        0xc ..\build\application-slave\app.o
- .text.App_RadioRoleIsMaster
-                0x0800471c       0x14 ..\build\application-slave\app.o
+                0x08004494       0x20 ..\build\application-slave\app.o
  .text.App_E28LocalAddress
-                0x08004730       0x1c ..\build\application-slave\app.o
+                0x080044b4        0xc ..\build\application-slave\app.o
  .text.App_E28BuildConfigFrame
-                0x0800474c       0x2c ..\build\application-slave\app.o
- .text.App_RadioRoleIsSlave
-                0x08004778       0x14 ..\build\application-slave\app.o
- .text.App_RadioFilterIsEnabled
-                0x0800478c       0x14 ..\build\application-slave\app.o
- .text.App_RadioAckIsEnabled
-                0x080047a0       0x14 ..\build\application-slave\app.o
+                0x080044c0       0x22 ..\build\application-slave\app.o
+ *fill*         0x080044e2        0x2 
+ .text.App_RadioLocalFrameId
+                0x080044e4        0xc ..\build\application-slave\app.o
  .text.App_RadioConfigMarkerValue
-                0x080047b4       0x4c ..\build\application-slave\app.o
+                0x080044f0       0x20 ..\build\application-slave\app.o
  .text.App_RadioConfigMarkerIsWritten
-                0x08004800       0xac ..\build\application-slave\app.o
+                0x08004510       0x38 ..\build\application-slave\app.o
  .text.App_E28ResponseHasParameters
-                0x080048ac       0x38 ..\build\application-slave\app.o
+                0x08004548       0x38 ..\build\application-slave\app.o
  .text.App_E28FrameMatchesAt
-                0x080048e4       0x44 ..\build\application-slave\app.o
+                0x08004580       0x44 ..\build\application-slave\app.o
  .text.App_E28ResponseMatchesConfig
-                0x08004928       0x4c ..\build\application-slave\app.o
+                0x080045c4       0x4c ..\build\application-slave\app.o
  .text.App_ServiceWatchdog
-                0x08004974       0x10 ..\build\application-slave\app.o
+                0x08004610       0x10 ..\build\application-slave\app.o
  .text.App_ConfigCommandPrefixMatches
-                0x08004984       0x6c ..\build\application-slave\app.o
- .text.App_ParseConfigNumber
-                0x080049f0       0xca ..\build\application-slave\app.o
- *fill*         0x08004aba        0x2 
- .text.App_ParseConfigAssignment
-                0x08004abc       0xf0 ..\build\application-slave\app.o
+                0x08004620       0x6c ..\build\application-slave\app.o
+ .text.App_ParseConfigId
+                0x0800468c       0xc8 ..\build\application-slave\app.o
  .text.App_FrameParserReset
-                0x08004bac        0xe ..\build\application-slave\app.o
+                0x08004754        0xe ..\build\application-slave\app.o
  .text.App_FrameTargetMatches
-                0x08004bba       0x1c ..\build\application-slave\app.o
+                0x08004762       0x1c ..\build\application-slave\app.o
  .text.App_FrameChecksum
-                0x08004bd6       0x20 ..\build\application-slave\app.o
+                0x0800477e       0x20 ..\build\application-slave\app.o
  .text.App_FrameIsValid
-                0x08004bf6       0x48 ..\build\application-slave\app.o
- *fill*         0x08004c3e        0x2 
+                0x0800479e       0x48 ..\build\application-slave\app.o
+ *fill*         0x080047e6        0x2 
  .text.App_TryReadUart
-                0x08004c40       0x74 ..\build\application-slave\app.o
+                0x080047e8       0x74 ..\build\application-slave\app.o
  .text.App_ClearRadioInput
-                0x08004cb4       0x20 ..\build\application-slave\app.o
- .text.App_LoadRadioDefaultConfig
-                0x08004cd4       0x48 ..\build\application-slave\app.o
+                0x0800485c       0x20 ..\build\application-slave\app.o
  .text.App_WriteUart
-                0x08004d1c       0x70 ..\build\application-slave\app.o
+                0x0800487c       0x70 ..\build\application-slave\app.o
  .text.App_WriteBytes
-                0x08004d8c       0x24 ..\build\application-slave\app.o
+                0x080048ec       0x24 ..\build\application-slave\app.o
  .text.App_SendRadioBytes
-                0x08004db0       0x14 ..\build\application-slave\app.o
+                0x08004910       0x14 ..\build\application-slave\app.o
  .text.App_SendAck
-                0x08004dc4       0x60 ..\build\application-slave\app.o
+                0x08004924       0x58 ..\build\application-slave\app.o
  .text.App_WriteHostHexDump
-                0x08004e24       0x70 ..\build\application-slave\app.o
+                0x0800497c       0x70 ..\build\application-slave\app.o
  .text.App_WriteHostHex16
-                0x08004e94       0x48 ..\build\application-slave\app.o
- .text.App_ReadRadioFor
-                0x08004edc       0x70 ..\build\application-slave\app.o
- .text.App_E28WriteConfig
-                0x08004f4c       0x44 ..\build\application-slave\app.o
- .text.App_QueryRadioConfig
-                0x08004f90       0x50 ..\build\application-slave\app.o
- .text.App_RecordPendingAck
-                0x08004fe0       0x28 ..\build\application-slave\app.o
+                0x080049ec       0x48 ..\build\application-slave\app.o
  .text.App_ProcessFrame
-                0x08005008      0x108 ..\build\application-slave\app.o
+                0x08004a34       0x78 ..\build\application-slave\app.o
  .text.App_FrameParserFeed
-                0x08005110       0x9c ..\build\application-slave\app.o
- .text.App_ForwardHostByte
-                0x080051ac       0x2c ..\build\application-slave\app.o
- .text.App_FlushHostConfigCommand
-                0x080051d8       0x30 ..\build\application-slave\app.o
+                0x08004aac       0x9c ..\build\application-slave\app.o
  .text.App_PumpRadioToHost
-                0x08005208       0x54 ..\build\application-slave\app.o
- .text.App_CheckPendingAckTimeout
-                0x0800525c       0x44 ..\build\application-slave\app.o
+                0x08004b48       0x40 ..\build\application-slave\app.o
+ .text.App_ForwardHostByte
+                0x08004b88       0x20 ..\build\application-slave\app.o
+ .text.App_FlushHostConfigCommand
+                0x08004ba8       0x30 ..\build\application-slave\app.o
+ .text.App_ReadRadioFor
+                0x08004bd8       0x70 ..\build\application-slave\app.o
+ .text.App_E28WriteConfig
+                0x08004c48       0x44 ..\build\application-slave\app.o
+ .text.App_QueryRadioConfig
+                0x08004c8c       0x50 ..\build\application-slave\app.o
  .text.App_WaitRadioModeSwitch
-                0x080052a0       0x30 ..\build\application-slave\app.o
+                0x08004cdc       0x30 ..\build\application-slave\app.o
  .text.App_ConfigureRadioTransparentMode
-                0x080052d0       0x2c ..\build\application-slave\app.o
+                0x08004d0c       0x2c ..\build\application-slave\app.o
  .text.App_ConfigureRadioCommandMode
-                0x080052fc       0x2c ..\build\application-slave\app.o
+                0x08004d38       0x2c ..\build\application-slave\app.o
  .text.App_WriteRadioConfigStorage
-                0x08005328       0xb8 ..\build\application-slave\app.o
+                0x08004d64       0x84 ..\build\application-slave\app.o
  .text.App_WriteRadioConfigMarker
-                0x080053e0        0xa ..\build\application-slave\app.o
+                0x08004de8        0xa ..\build\application-slave\app.o
  .text.App_SetUartBaudrate
-                0x080053ea       0x30 ..\build\application-slave\app.o
- *fill*         0x0800541a        0x2 
+                0x08004df2       0x30 ..\build\application-slave\app.o
+ *fill*         0x08004e22        0x2 
  .text.App_EnterRadioCommandMode
-                0x0800541c       0x30 ..\build\application-slave\app.o
+                0x08004e24       0x30 ..\build\application-slave\app.o
  .text.App_FindRadioCommandBaudrate
-                0x0800544c       0x2c ..\build\application-slave\app.o
+                0x08004e54       0x2c ..\build\application-slave\app.o
  .text.App_ConfigureRadioOnFirstBoot
-                0x08005478       0xa0 ..\build\application-slave\app.o
- .text.App_ApplyRadioRuntimeConfig
-                0x08005518       0x2c ..\build\application-slave\app.o
+                0x08004e80       0xa0 ..\build\application-slave\app.o
  .text.App_SendStartupBanner
-                0x08005544       0x84 ..\build\application-slave\app.o
- .text.App_ParseConfigRole
-                0x080055c8       0x58 ..\build\application-slave\app.o
+                0x08004f20       0x8c ..\build\application-slave\app.o
  .text.App_WriteHostString
-                0x08005620       0x20 ..\build\application-slave\app.o
- .text.App_PrintRuntimeConfig
-                0x08005640       0xd0 ..\build\application-slave\app.o
+                0x08004fac       0x20 ..\build\application-slave\app.o
  .text.App_ProcessHostConfigCommand
-                0x08005710      0x2e4 ..\build\application-slave\app.o
+                0x08004fcc      0x114 ..\build\application-slave\app.o
  .text.App_TryHandleHostConfigByte
-                0x080059f4       0x70 ..\build\application-slave\app.o
+                0x080050e0       0x70 ..\build\application-slave\app.o
  .text.App_PumpHostToRadio
-                0x08005a64       0x44 ..\build\application-slave\app.o
+                0x08005150       0x44 ..\build\application-slave\app.o
  .text.App_Init
-                0x08005aa8       0x70 ..\build\application-slave\app.o
-                0x08005aa8                App_Init
- .text.App_Run  0x08005b18       0x28 ..\build\application-slave\app.o
-                0x08005b18                App_Run
+                0x08005194       0x70 ..\build\application-slave\app.o
+                0x08005194                App_Init
+ .text.App_Run  0x08005204       0x24 ..\build\application-slave\app.o
+                0x08005204                App_Run
  .text.AppFrameworkLed_On
-                0x08005b40       0x12 ..\build\application-slave\app_framework_led.o
-                0x08005b40                AppFrameworkLed_On
+                0x08005228       0x12 ..\build\application-slave\app_framework_led.o
+                0x08005228                AppFrameworkLed_On
  .text.AppFrameworkLed_Off
-                0x08005b52       0x12 ..\build\application-slave\app_framework_led.o
-                0x08005b52                AppFrameworkLed_Off
+                0x0800523a       0x12 ..\build\application-slave\app_framework_led.o
+                0x0800523a                AppFrameworkLed_Off
  .text.AppFrameworkLed_Init
-                0x08005b64       0x1c ..\build\application-slave\app_framework_led.o
-                0x08005b64                AppFrameworkLed_Init
+                0x0800524c       0x1c ..\build\application-slave\app_framework_led.o
+                0x0800524c                AppFrameworkLed_Init
  .text.AppFrameworkLed_Update
-                0x08005b80       0x24 ..\build\application-slave\app_framework_led.o
-                0x08005b80                AppFrameworkLed_Update
+                0x08005268       0x24 ..\build\application-slave\app_framework_led.o
+                0x08005268                AppFrameworkLed_Update
  .text.AppFrameworkClock_ConfigHsePll6AdcDiv6
-                0x08005ba4       0x68 ..\build\application-slave\app_framework_clock.o
-                0x08005ba4                AppFrameworkClock_ConfigHsePll6AdcDiv6
+                0x0800528c       0x68 ..\build\application-slave\app_framework_clock.o
+                0x0800528c                AppFrameworkClock_ConfigHsePll6AdcDiv6
  .text.NMI_Handler
-                0x08005c0c        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c0c                NMI_Handler
+                0x080052f4        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x080052f4                NMI_Handler
  .text.HardFault_Handler
-                0x08005c0e        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c0e                HardFault_Handler
+                0x080052f6        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x080052f6                HardFault_Handler
  .text.MemManage_Handler
-                0x08005c10        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c10                MemManage_Handler
+                0x080052f8        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x080052f8                MemManage_Handler
  .text.BusFault_Handler
-                0x08005c12        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c12                BusFault_Handler
+                0x080052fa        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x080052fa                BusFault_Handler
  .text.UsageFault_Handler
-                0x08005c14        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c14                UsageFault_Handler
+                0x080052fc        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x080052fc                UsageFault_Handler
  .text.SVC_Handler
-                0x08005c16        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c16                SVC_Handler
+                0x080052fe        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x080052fe                SVC_Handler
  .text.DebugMon_Handler
-                0x08005c18        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c18                DebugMon_Handler
+                0x08005300        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x08005300                DebugMon_Handler
  .text.PendSV_Handler
-                0x08005c1a        0x2 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c1a                PendSV_Handler
+                0x08005302        0x2 ..\build\application-slave\stm32f1xx_it.o
+                0x08005302                PendSV_Handler
  .text.SysTick_Handler
-                0x08005c1c        0x8 ..\build\application-slave\stm32f1xx_it.o
-                0x08005c1c                SysTick_Handler
+                0x08005304        0x8 ..\build\application-slave\stm32f1xx_it.o
+                0x08005304                SysTick_Handler
  .text.HAL_MspInit
-                0x08005c24       0x44 ..\build\application-slave\stm32f1xx_hal_msp.o
-                0x08005c24                HAL_MspInit
+                0x0800530c       0x44 ..\build\application-slave\stm32f1xx_hal_msp.o
+                0x0800530c                HAL_MspInit
  .text.HAL_UART_MspInit
-                0x08005c68      0x144 ..\build\application-slave\stm32f1xx_hal_msp.o
-                0x08005c68                HAL_UART_MspInit
+                0x08005350      0x144 ..\build\application-slave\stm32f1xx_hal_msp.o
+                0x08005350                HAL_UART_MspInit
  .text.HAL_UART_MspDeInit
-                0x08005dac       0x74 ..\build\application-slave\stm32f1xx_hal_msp.o
-                0x08005dac                HAL_UART_MspDeInit
+                0x08005494       0x74 ..\build\application-slave\stm32f1xx_hal_msp.o
+                0x08005494                HAL_UART_MspDeInit
  .text.SystemInit
-                0x08005e20       0x10 ..\build\application-slave\system_stm32f1xx.o
-                0x08005e20                SystemInit
+                0x08005508       0x10 ..\build\application-slave\system_stm32f1xx.o
+                0x08005508                SystemInit
  .text.HAL_InitTick
-                0x08005e30       0x4c ..\build\application-slave\stm32f1xx_hal.o
-                0x08005e30                HAL_InitTick
+                0x08005518       0x4c ..\build\application-slave\stm32f1xx_hal.o
+                0x08005518                HAL_InitTick
  .text.HAL_Init
-                0x08005e7c       0x24 ..\build\application-slave\stm32f1xx_hal.o
-                0x08005e7c                HAL_Init
+                0x08005564       0x24 ..\build\application-slave\stm32f1xx_hal.o
+                0x08005564                HAL_Init
  .text.HAL_IncTick
-                0x08005ea0       0x18 ..\build\application-slave\stm32f1xx_hal.o
-                0x08005ea0                HAL_IncTick
+                0x08005588       0x18 ..\build\application-slave\stm32f1xx_hal.o
+                0x08005588                HAL_IncTick
  .text.HAL_GetTick
-                0x08005eb8        0xc ..\build\application-slave\stm32f1xx_hal.o
-                0x08005eb8                HAL_GetTick
+                0x080055a0        0xc ..\build\application-slave\stm32f1xx_hal.o
+                0x080055a0                HAL_GetTick
  .text.RCC_Delay
-                0x08005ec4       0x2c ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x080055ac       0x2c ..\build\application-slave\stm32f1xx_hal_rcc.o
  .text.HAL_RCC_OscConfig
-                0x08005ef0      0x410 ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x08005ef0                HAL_RCC_OscConfig
+                0x080055d8      0x410 ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x080055d8                HAL_RCC_OscConfig
  .text.HAL_RCC_GetSysClockFreq
-                0x08006300       0x7c ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x08006300                HAL_RCC_GetSysClockFreq
+                0x080059e8       0x7c ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x080059e8                HAL_RCC_GetSysClockFreq
  .text.HAL_RCC_ClockConfig
-                0x0800637c      0x16c ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x0800637c                HAL_RCC_ClockConfig
+                0x08005a64      0x16c ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x08005a64                HAL_RCC_ClockConfig
  .text.HAL_RCC_GetHCLKFreq
-                0x080064e8        0xc ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x080064e8                HAL_RCC_GetHCLKFreq
+                0x08005bd0        0xc ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x08005bd0                HAL_RCC_GetHCLKFreq
  .text.HAL_RCC_GetPCLK1Freq
-                0x080064f4       0x20 ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x080064f4                HAL_RCC_GetPCLK1Freq
+                0x08005bdc       0x20 ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x08005bdc                HAL_RCC_GetPCLK1Freq
  .text.HAL_RCC_GetPCLK2Freq
-                0x08006514       0x20 ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x08006514                HAL_RCC_GetPCLK2Freq
+                0x08005bfc       0x20 ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x08005bfc                HAL_RCC_GetPCLK2Freq
  .text.HAL_RCCEx_PeriphCLKConfig
-                0x08006534      0x118 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
-                0x08006534                HAL_RCCEx_PeriphCLKConfig
+                0x08005c1c      0x118 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+                0x08005c1c                HAL_RCCEx_PeriphCLKConfig
  .text.HAL_GPIO_Init
-                0x0800664c      0x214 ..\build\application-slave\stm32f1xx_hal_gpio.o
-                0x0800664c                HAL_GPIO_Init
+                0x08005d34      0x214 ..\build\application-slave\stm32f1xx_hal_gpio.o
+                0x08005d34                HAL_GPIO_Init
  .text.HAL_GPIO_DeInit
-                0x08006860       0xfc ..\build\application-slave\stm32f1xx_hal_gpio.o
-                0x08006860                HAL_GPIO_DeInit
+                0x08005f48       0xfc ..\build\application-slave\stm32f1xx_hal_gpio.o
+                0x08005f48                HAL_GPIO_DeInit
  .text.HAL_GPIO_ReadPin
-                0x0800695c        0xe ..\build\application-slave\stm32f1xx_hal_gpio.o
-                0x0800695c                HAL_GPIO_ReadPin
+                0x08006044        0xe ..\build\application-slave\stm32f1xx_hal_gpio.o
+                0x08006044                HAL_GPIO_ReadPin
  .text.HAL_GPIO_WritePin
-                0x0800696a        0xc ..\build\application-slave\stm32f1xx_hal_gpio.o
-                0x0800696a                HAL_GPIO_WritePin
- *fill*         0x08006976        0x2 
+                0x08006052        0xc ..\build\application-slave\stm32f1xx_hal_gpio.o
+                0x08006052                HAL_GPIO_WritePin
+ *fill*         0x0800605e        0x2 
  .text.__NVIC_SetPriority
-                0x08006978       0x28 ..\build\application-slave\stm32f1xx_hal_cortex.o
+                0x08006060       0x28 ..\build\application-slave\stm32f1xx_hal_cortex.o
  .text.NVIC_EncodePriority
-                0x080069a0       0x3e ..\build\application-slave\stm32f1xx_hal_cortex.o
- *fill*         0x080069de        0x2 
+                0x08006088       0x3e ..\build\application-slave\stm32f1xx_hal_cortex.o
+ *fill*         0x080060c6        0x2 
  .text.HAL_NVIC_SetPriorityGrouping
-                0x080069e0       0x24 ..\build\application-slave\stm32f1xx_hal_cortex.o
-                0x080069e0                HAL_NVIC_SetPriorityGrouping
+                0x080060c8       0x24 ..\build\application-slave\stm32f1xx_hal_cortex.o
+                0x080060c8                HAL_NVIC_SetPriorityGrouping
  .text.HAL_NVIC_SetPriority
-                0x08006a04       0x20 ..\build\application-slave\stm32f1xx_hal_cortex.o
-                0x08006a04                HAL_NVIC_SetPriority
+                0x080060ec       0x20 ..\build\application-slave\stm32f1xx_hal_cortex.o
+                0x080060ec                HAL_NVIC_SetPriority
  .text.HAL_SYSTICK_Config
-                0x08006a24       0x28 ..\build\application-slave\stm32f1xx_hal_cortex.o
-                0x08006a24                HAL_SYSTICK_Config
+                0x0800610c       0x28 ..\build\application-slave\stm32f1xx_hal_cortex.o
+                0x0800610c                HAL_SYSTICK_Config
  .text.FLASH_Program_HalfWord
-                0x08006a4c       0x1c ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x08006134       0x1c ..\build\application-slave\stm32f1xx_hal_flash.o
  .text.FLASH_SetErrorCode
-                0x08006a68       0x70 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x08006150       0x70 ..\build\application-slave\stm32f1xx_hal_flash.o
  .text.HAL_FLASH_Unlock
-                0x08006ad8       0x34 ..\build\application-slave\stm32f1xx_hal_flash.o
-                0x08006ad8                HAL_FLASH_Unlock
+                0x080061c0       0x34 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x080061c0                HAL_FLASH_Unlock
  .text.HAL_FLASH_Lock
-                0x08006b0c       0x14 ..\build\application-slave\stm32f1xx_hal_flash.o
-                0x08006b0c                HAL_FLASH_Lock
+                0x080061f4       0x14 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x080061f4                HAL_FLASH_Lock
  .text.FLASH_WaitForLastOperation
-                0x08006b20       0x68 ..\build\application-slave\stm32f1xx_hal_flash.o
-                0x08006b20                FLASH_WaitForLastOperation
+                0x08006208       0x68 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x08006208                FLASH_WaitForLastOperation
  .text.HAL_FLASH_Program
-                0x08006b88       0xa0 ..\build\application-slave\stm32f1xx_hal_flash.o
-                0x08006b88                HAL_FLASH_Program
+                0x08006270       0xa0 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x08006270                HAL_FLASH_Program
  .text.FLASH_MassErase
-                0x08006c28       0x24 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+                0x08006310       0x24 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
  .text.FLASH_PageErase
-                0x08006c4c       0x24 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
-                0x08006c4c                FLASH_PageErase
+                0x08006334       0x24 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+                0x08006334                FLASH_PageErase
  .text.HAL_FLASHEx_Erase
-                0x08006c70       0xa4 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
-                0x08006c70                HAL_FLASHEx_Erase
+                0x08006358       0xa4 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+                0x08006358                HAL_FLASHEx_Erase
  .text.UART_SetConfig
-                0x08006d14       0x94 ..\build\application-slave\stm32f1xx_hal_uart.o
+                0x080063fc       0x94 ..\build\application-slave\stm32f1xx_hal_uart.o
  .text.UART_WaitOnFlagUntilTimeout
-                0x08006da8       0x68 ..\build\application-slave\stm32f1xx_hal_uart.o
+                0x08006490       0x68 ..\build\application-slave\stm32f1xx_hal_uart.o
  .text.HAL_UART_Init
-                0x08006e10       0x5e ..\build\application-slave\stm32f1xx_hal_uart.o
-                0x08006e10                HAL_UART_Init
+                0x080064f8       0x5e ..\build\application-slave\stm32f1xx_hal_uart.o
+                0x080064f8                HAL_UART_Init
  .text.HAL_UART_DeInit
-                0x08006e6e       0x32 ..\build\application-slave\stm32f1xx_hal_uart.o
-                0x08006e6e                HAL_UART_DeInit
+                0x08006556       0x32 ..\build\application-slave\stm32f1xx_hal_uart.o
+                0x08006556                HAL_UART_DeInit
  .text.HAL_UART_Transmit
-                0x08006ea0       0xd6 ..\build\application-slave\stm32f1xx_hal_uart.o
-                0x08006ea0                HAL_UART_Transmit
- *fill*         0x08006f76        0x2 
+                0x08006588       0xd6 ..\build\application-slave\stm32f1xx_hal_uart.o
+                0x08006588                HAL_UART_Transmit
+ *fill*         0x0800665e        0x2 
  .text.Reset_Handler
-                0x08006f78       0x48 ..\build\application-slave\startup_stm32f103xb.o
-                0x08006f78                Reset_Handler
+                0x08006660       0x48 ..\build\application-slave\startup_stm32f103xb.o
+                0x08006660                Reset_Handler
  .text.Default_Handler
-                0x08006fc0        0x2 ..\build\application-slave\startup_stm32f103xb.o
-                0x08006fc0                RTC_Alarm_IRQHandler
-                0x08006fc0                EXTI2_IRQHandler
-                0x08006fc0                TIM1_CC_IRQHandler
-                0x08006fc0                PVD_IRQHandler
-                0x08006fc0                EXTI3_IRQHandler
-                0x08006fc0                EXTI0_IRQHandler
-                0x08006fc0                I2C2_EV_IRQHandler
-                0x08006fc0                ADC1_2_IRQHandler
-                0x08006fc0                SPI1_IRQHandler
-                0x08006fc0                TAMPER_IRQHandler
-                0x08006fc0                DMA1_Channel4_IRQHandler
-                0x08006fc0                USART3_IRQHandler
-                0x08006fc0                RTC_IRQHandler
-                0x08006fc0                DMA1_Channel7_IRQHandler
-                0x08006fc0                CAN1_RX1_IRQHandler
-                0x08006fc0                TIM4_IRQHandler
-                0x08006fc0                I2C1_EV_IRQHandler
-                0x08006fc0                DMA1_Channel6_IRQHandler
-                0x08006fc0                TIM3_IRQHandler
-                0x08006fc0                RCC_IRQHandler
-                0x08006fc0                TIM1_TRG_COM_IRQHandler
-                0x08006fc0                DMA1_Channel1_IRQHandler
-                0x08006fc0                Default_Handler
-                0x08006fc0                EXTI15_10_IRQHandler
-                0x08006fc0                EXTI9_5_IRQHandler
-                0x08006fc0                SPI2_IRQHandler
-                0x08006fc0                DMA1_Channel5_IRQHandler
-                0x08006fc0                EXTI4_IRQHandler
-                0x08006fc0                USB_LP_CAN1_RX0_IRQHandler
-                0x08006fc0                USB_HP_CAN1_TX_IRQHandler
-                0x08006fc0                DMA1_Channel3_IRQHandler
-                0x08006fc0                TIM1_UP_IRQHandler
-                0x08006fc0                WWDG_IRQHandler
-                0x08006fc0                TIM2_IRQHandler
-                0x08006fc0                TIM1_BRK_IRQHandler
-                0x08006fc0                EXTI1_IRQHandler
-                0x08006fc0                USART2_IRQHandler
-                0x08006fc0                I2C2_ER_IRQHandler
-                0x08006fc0                DMA1_Channel2_IRQHandler
-                0x08006fc0                CAN1_SCE_IRQHandler
-                0x08006fc0                FLASH_IRQHandler
-                0x08006fc0                USART1_IRQHandler
-                0x08006fc0                I2C1_ER_IRQHandler
-                0x08006fc0                USBWakeUp_IRQHandler
- *fill*         0x08006fc2        0x2 
- .text.memcmp   0x08006fc4       0x5c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
-                0x08006fc4                memcmp
- .text.memset   0x08007020       0x9c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
-                0x08007020                memset
+                0x080066a8        0x2 ..\build\application-slave\startup_stm32f103xb.o
+                0x080066a8                RTC_Alarm_IRQHandler
+                0x080066a8                EXTI2_IRQHandler
+                0x080066a8                TIM1_CC_IRQHandler
+                0x080066a8                PVD_IRQHandler
+                0x080066a8                EXTI3_IRQHandler
+                0x080066a8                EXTI0_IRQHandler
+                0x080066a8                I2C2_EV_IRQHandler
+                0x080066a8                ADC1_2_IRQHandler
+                0x080066a8                SPI1_IRQHandler
+                0x080066a8                TAMPER_IRQHandler
+                0x080066a8                DMA1_Channel4_IRQHandler
+                0x080066a8                USART3_IRQHandler
+                0x080066a8                RTC_IRQHandler
+                0x080066a8                DMA1_Channel7_IRQHandler
+                0x080066a8                CAN1_RX1_IRQHandler
+                0x080066a8                TIM4_IRQHandler
+                0x080066a8                I2C1_EV_IRQHandler
+                0x080066a8                DMA1_Channel6_IRQHandler
+                0x080066a8                TIM3_IRQHandler
+                0x080066a8                RCC_IRQHandler
+                0x080066a8                TIM1_TRG_COM_IRQHandler
+                0x080066a8                DMA1_Channel1_IRQHandler
+                0x080066a8                Default_Handler
+                0x080066a8                EXTI15_10_IRQHandler
+                0x080066a8                EXTI9_5_IRQHandler
+                0x080066a8                SPI2_IRQHandler
+                0x080066a8                DMA1_Channel5_IRQHandler
+                0x080066a8                EXTI4_IRQHandler
+                0x080066a8                USB_LP_CAN1_RX0_IRQHandler
+                0x080066a8                USB_HP_CAN1_TX_IRQHandler
+                0x080066a8                DMA1_Channel3_IRQHandler
+                0x080066a8                TIM1_UP_IRQHandler
+                0x080066a8                WWDG_IRQHandler
+                0x080066a8                TIM2_IRQHandler
+                0x080066a8                TIM1_BRK_IRQHandler
+                0x080066a8                EXTI1_IRQHandler
+                0x080066a8                USART2_IRQHandler
+                0x080066a8                I2C2_ER_IRQHandler
+                0x080066a8                DMA1_Channel2_IRQHandler
+                0x080066a8                CAN1_SCE_IRQHandler
+                0x080066a8                FLASH_IRQHandler
+                0x080066a8                USART1_IRQHandler
+                0x080066a8                I2C1_ER_IRQHandler
+                0x080066a8                USBWakeUp_IRQHandler
+ *fill*         0x080066aa        0x2 
+ .text.memset   0x080066ac       0x9c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
+                0x080066ac                memset
  .text.__libc_init_array
-                0x080070bc       0x50 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-init.o)
-                0x080070bc                __libc_init_array
+                0x08006748       0x50 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-init.o)
+                0x08006748                __libc_init_array
  .text.__retarget_lock_acquire_recursive
-                0x0800710c        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
-                0x0800710c                __retarget_lock_acquire_recursive
+                0x08006798        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
+                0x08006798                __retarget_lock_acquire_recursive
  .text.__retarget_lock_release_recursive
-                0x08007110        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
-                0x08007110                __retarget_lock_release_recursive
- .text.strlen   0x08007114       0x5c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
-                0x08007114                strlen
+                0x0800679c        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
+                0x0800679c                __retarget_lock_release_recursive
+ .text.strlen   0x080067a0       0x5c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
+                0x080067a0                strlen
  .text.startup.register_fini
-                0x08007170       0x14 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
- .text.atexit   0x08007184        0xc C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-atexit.o)
-                0x08007184                atexit
+                0x080067fc       0x14 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
+ .text.atexit   0x08006810        0xc C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-atexit.o)
+                0x08006810                atexit
  .text.__libc_fini_array
-                0x08007190       0x28 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-fini.o)
-                0x08007190                __libc_fini_array
+                0x0800681c       0x28 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-fini.o)
+                0x0800681c                __libc_fini_array
  .text.__register_exitproc
-                0x080071b8       0x80 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
-                0x080071b8                __register_exitproc
+                0x08006844       0x80 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
+                0x08006844                __register_exitproc
  *(.glue_7)
- .glue_7        0x08007238        0x0 linker stubs
+ .glue_7        0x080068c4        0x0 linker stubs
  *(.glue_7t)
- .glue_7t       0x08007238        0x0 linker stubs
+ .glue_7t       0x080068c4        0x0 linker stubs
  *(.eh_frame)
- .eh_frame      0x08007238        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+ .eh_frame      0x080068c4        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
  *(.init)
- .init          0x08007238        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crti.o
-                0x08007238                _init
- .init          0x0800723c        0x8 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtn.o
+ .init          0x080068c4        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crti.o
+                0x080068c4                _init
+ .init          0x080068c8        0x8 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtn.o
  *(.fini)
- .fini          0x08007244        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crti.o
-                0x08007244                _fini
- .fini          0x08007248        0x8 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtn.o
-                0x08007250                        . = ALIGN (0x4)
-                0x08007250                        _etext = .
+ .fini          0x080068d0        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crti.o
+                0x080068d0                _fini
+ .fini          0x080068d4        0x8 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtn.o
+                0x080068dc                        . = ALIGN (0x4)
+                0x080068dc                        _etext = .
 
-.vfp11_veneer   0x08007250        0x0
- .vfp11_veneer  0x08007250        0x0 linker stubs
+.vfp11_veneer   0x080068dc        0x0
+ .vfp11_veneer  0x080068dc        0x0 linker stubs
 
-.v4_bx          0x08007250        0x0
- .v4_bx         0x08007250        0x0 linker stubs
+.v4_bx          0x080068dc        0x0
+ .v4_bx         0x080068dc        0x0 linker stubs
 
-.iplt           0x08007250        0x0
- .iplt          0x08007250        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+.iplt           0x080068dc        0x0
+ .iplt          0x080068dc        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
 
-.rodata         0x08007250      0x200
-                0x08007250                        . = ALIGN (0x4)
+.rodata         0x080068dc      0x114
+                0x080068dc                        . = ALIGN (0x4)
  *(.rodata)
  *(.rodata*)
  .rodata.App_QueryRadioConfig.str1.4
-                0x08007250      0x1b9 ..\build\application-slave\app.o
+                0x080068dc       0xcd ..\build\application-slave\app.o
                                   0x4 (size before relaxing)
  .rodata.App_SendStartupBanner.str1.4
-                0x08007409       0x42 ..\build\application-slave\app.o
- .rodata.App_ParseConfigRole.str1.4
-                0x08007409       0x17 ..\build\application-slave\app.o
- .rodata.App_PrintRuntimeConfig.str1.4
-                0x08007409       0x6b ..\build\application-slave\app.o
+                0x080069a9       0x4e ..\build\application-slave\app.o
  .rodata.App_ProcessHostConfigCommand.str1.4
-                0x08007409       0xda ..\build\application-slave\app.o
- *fill*         0x08007409        0x3 
- .rodata.hex.0  0x0800740c       0x11 ..\build\application-slave\app.o
- *fill*         0x0800741d        0x3 
+                0x080069a9       0x66 ..\build\application-slave\app.o
+ *fill*         0x080069a9        0x3 
+ .rodata.hex.0  0x080069ac       0x11 ..\build\application-slave\app.o
+ *fill*         0x080069bd        0x3 
  .rodata.prefix.1
-                0x08007420        0x3 ..\build\application-slave\app.o
- *fill*         0x08007423        0x1 
- .rodata.hex.2  0x08007424       0x11 ..\build\application-slave\app.o
- *fill*         0x08007435        0x3 
+                0x080069c0        0x3 ..\build\application-slave\app.o
+ *fill*         0x080069c3        0x1 
+ .rodata.hex.2  0x080069c4       0x11 ..\build\application-slave\app.o
+ *fill*         0x080069d5        0x3 
  .rodata.APBPrescTable
-                0x08007438        0x8 ..\build\application-slave\system_stm32f1xx.o
-                0x08007438                APBPrescTable
+                0x080069d8        0x8 ..\build\application-slave\system_stm32f1xx.o
+                0x080069d8                APBPrescTable
  .rodata.AHBPrescTable
-                0x08007440       0x10 ..\build\application-slave\system_stm32f1xx.o
-                0x08007440                AHBPrescTable
+                0x080069e0       0x10 ..\build\application-slave\system_stm32f1xx.o
+                0x080069e0                AHBPrescTable
  .rodata.HAL_RCC_GetSysClockFreq.str1.4
-                0x08007450       0x11 ..\build\application-slave\stm32f1xx_hal_rcc.o
-                0x08007464                        . = ALIGN (0x4)
+                0x080069f0       0x11 ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x08006a04                        . = ALIGN (0x4)
+
+.rel.dyn        0x080069f0        0x0
+ .rel.iplt      0x080069f0        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
 
 .ARM.extab
  *(.ARM.extab* .gnu.linkonce.armextab.*)
 
-.ARM            0x08007450        0x8
-                0x08007450                        __exidx_start = .
+.ARM            0x080069f0        0x0
+                0x080069f0                        __exidx_start = .
  *(.ARM.exidx*)
- .ARM.exidx     0x08007450        0x8 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
-                0x08007458                        __exidx_end = .
+                0x080069f0                        __exidx_end = .
 
-.rel.dyn        0x08007458        0x0
- .rel.iplt      0x08007458        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
-
-.preinit_array  0x08007458        0x0
-                0x08007458                        PROVIDE (__preinit_array_start = .)
+.preinit_array  0x080069f0        0x0
+                0x080069f0                        PROVIDE (__preinit_array_start = .)
  *(.preinit_array*)
-                0x08007458                        PROVIDE (__preinit_array_end = .)
+                0x080069f0                        PROVIDE (__preinit_array_end = .)
 
-.init_array     0x08007458        0x8
-                0x08007458                        PROVIDE (__init_array_start = .)
+.init_array     0x080069f0        0x8
+                0x080069f0                        PROVIDE (__init_array_start = .)
  *(SORT_BY_NAME(.init_array.*))
  .init_array.00000
-                0x08007458        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
+                0x080069f0        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
  *(.init_array*)
- .init_array    0x0800745c        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
-                0x08007460                        PROVIDE (__init_array_end = .)
+ .init_array    0x080069f4        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+                0x080069f8                        PROVIDE (__init_array_end = .)
 
-.fini_array     0x08007460        0x4
-                0x08007460                        PROVIDE (__fini_array_start = .)
+.fini_array     0x080069f8        0x4
+                0x080069f8                        PROVIDE (__fini_array_start = .)
  *(SORT_BY_NAME(.fini_array.*))
  *(.fini_array*)
- .fini_array    0x08007460        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
-                0x08007464                        PROVIDE (__fini_array_end = .)
-                0x08007464                        _sidata = LOADADDR (.data)
+ .fini_array    0x080069f8        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
+                0x080069fc                        PROVIDE (__fini_array_end = .)
+                0x080069fc                        _sidata = LOADADDR (.data)
 
-.data           0x20000000       0x10 load address 0x08007464
+.data           0x20000000       0x10 load address 0x080069fc
                 0x20000000                        . = ALIGN (0x4)
                 0x20000000                        _sdata = .
  *(.data)
@@ -1356,17 +1317,17 @@ LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib
                 0x20000010                        _edata = .
 
 .tm_clone_table
-                0x20000010        0x0 load address 0x08007474
+                0x20000010        0x0 load address 0x08006a0c
  .tm_clone_table
                 0x20000010        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
  .tm_clone_table
                 0x20000010        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtend.o
 
-.igot.plt       0x20000010        0x0 load address 0x08007474
+.igot.plt       0x20000010        0x0 load address 0x08006a0c
  .igot.plt      0x20000010        0x0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtbegin.o
                 0x20000010                        . = ALIGN (0x4)
 
-.bss            0x20000010      0x718 load address 0x08007474
+.bss            0x20000010      0x6d0 load address 0x08006a0c
                 0x20000010                        _sbss = .
                 0x20000010                        __bss_start__ = _sbss
  *(.bss)
@@ -1381,72 +1342,65 @@ LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib
                 0x20000070                huart2
  .bss.huart1    0x200000b4       0x44 ..\build\application-slave\main.o
                 0x200000b4                huart1
- .bss.g_app_diag_frame_ack_timeout_count
-                0x200000f8        0x4 ..\build\application-slave\app.o
-                0x200000f8                g_app_diag_frame_ack_timeout_count
- .bss.g_app_diag_frame_ack_rx_count
-                0x200000fc        0x4 ..\build\application-slave\app.o
-                0x200000fc                g_app_diag_frame_ack_rx_count
  .bss.g_app_diag_frame_ack_tx_count
-                0x20000100        0x4 ..\build\application-slave\app.o
-                0x20000100                g_app_diag_frame_ack_tx_count
+                0x200000f8        0x4 ..\build\application-slave\app.o
+                0x200000f8                g_app_diag_frame_ack_tx_count
  .bss.g_app_diag_frame_drop_count
-                0x20000104        0x4 ..\build\application-slave\app.o
-                0x20000104                g_app_diag_frame_drop_count
+                0x200000fc        0x4 ..\build\application-slave\app.o
+                0x200000fc                g_app_diag_frame_drop_count
  .bss.g_app_diag_frame_rx_count
-                0x20000108        0x4 ..\build\application-slave\app.o
-                0x20000108                g_app_diag_frame_rx_count
+                0x20000100        0x4 ..\build\application-slave\app.o
+                0x20000100                g_app_diag_frame_rx_count
  .bss.g_app_diag_radio_config_first_boot_count
-                0x2000010c        0x4 ..\build\application-slave\app.o
-                0x2000010c                g_app_diag_radio_config_first_boot_count
+                0x20000104        0x4 ..\build\application-slave\app.o
+                0x20000104                g_app_diag_radio_config_first_boot_count
  .bss.g_app_diag_uart3_tx_count
-                0x20000110        0x4 ..\build\application-slave\app.o
-                0x20000110                g_app_diag_uart3_tx_count
+                0x20000108        0x4 ..\build\application-slave\app.o
+                0x20000108                g_app_diag_uart3_tx_count
  .bss.g_app_diag_uart3_rx_count
-                0x20000114        0x4 ..\build\application-slave\app.o
-                0x20000114                g_app_diag_uart3_rx_count
+                0x2000010c        0x4 ..\build\application-slave\app.o
+                0x2000010c                g_app_diag_uart3_rx_count
  .bss.g_app_diag_uart2_tx_count
-                0x20000118        0x4 ..\build\application-slave\app.o
-                0x20000118                g_app_diag_uart2_tx_count
+                0x20000110        0x4 ..\build\application-slave\app.o
+                0x20000110                g_app_diag_uart2_tx_count
  .bss.g_app_diag_uart2_rx_count
-                0x2000011c        0x4 ..\build\application-slave\app.o
-                0x2000011c                g_app_diag_uart2_rx_count
+                0x20000114        0x4 ..\build\application-slave\app.o
+                0x20000114                g_app_diag_uart2_rx_count
  .bss.g_app_diag_uart1_tx_count
-                0x20000120        0x4 ..\build\application-slave\app.o
-                0x20000120                g_app_diag_uart1_tx_count
+                0x20000118        0x4 ..\build\application-slave\app.o
+                0x20000118                g_app_diag_uart1_tx_count
  .bss.g_app_diag_uart1_rx_count
-                0x20000124        0x4 ..\build\application-slave\app.o
-                0x20000124                g_app_diag_uart1_rx_count
- .bss.g_app     0x20000128      0x440 ..\build\application-slave\app.o
- .bss.uwTick    0x20000568        0x4 ..\build\application-slave\stm32f1xx_hal.o
-                0x20000568                uwTick
- *fill*         0x2000056c        0x4 
- .bss.pFlash    0x20000570       0x20 ..\build\application-slave\stm32f1xx_hal_flash.o
-                0x20000570                pFlash
+                0x2000011c        0x4 ..\build\application-slave\app.o
+                0x2000011c                g_app_diag_uart1_rx_count
+ .bss.g_app     0x20000120      0x404 ..\build\application-slave\app.o
+ .bss.uwTick    0x20000524        0x4 ..\build\application-slave\stm32f1xx_hal.o
+                0x20000524                uwTick
+ .bss.pFlash    0x20000528       0x20 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x20000528                pFlash
  .bss.__lock___atexit_recursive_mutex
-                0x20000590        0x1 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
-                0x20000590                __lock___atexit_recursive_mutex
- *fill*         0x20000591        0x3 
- .bss.__atexit  0x20000594        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
-                0x20000594                __atexit
+                0x20000548        0x1 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
+                0x20000548                __lock___atexit_recursive_mutex
+ *fill*         0x20000549        0x3 
+ .bss.__atexit  0x2000054c        0x4 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
+                0x2000054c                __atexit
  .bss.__atexit0
-                0x20000598      0x190 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
-                0x20000598                __atexit0
+                0x20000550      0x190 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
+                0x20000550                __atexit0
  *(COMMON)
-                0x20000728                        . = ALIGN (0x4)
-                0x20000728                        _ebss = .
-                0x20000728                        __bss_end__ = _ebss
+                0x200006e0                        . = ALIGN (0x4)
+                0x200006e0                        _ebss = .
+                0x200006e0                        __bss_end__ = _ebss
 
 ._user_heap_stack
-                0x20000728      0x600 load address 0x08007474
-                0x20000728                        . = ALIGN (0x8)
-                0x20000728                        PROVIDE (end = .)
+                0x200006e0      0x600 load address 0x08006a0c
+                0x200006e0                        . = ALIGN (0x8)
+                0x200006e0                        PROVIDE (end = .)
                 [!provide]                        PROVIDE (_end = .)
-                0x20000928                        . = (. + _Min_Heap_Size)
- *fill*         0x20000728      0x200 
-                0x20000d28                        . = (. + _Min_Stack_Size)
- *fill*         0x20000928      0x400 
-                0x20000d28                        . = ALIGN (0x8)
+                0x200008e0                        . = (. + _Min_Heap_Size)
+ *fill*         0x200006e0      0x200 
+                0x20000ce0                        . = (. + _Min_Stack_Size)
+ *fill*         0x200008e0      0x400 
+                0x20000ce0                        . = ALIGN (0x8)
 
 /DISCARD/
  libc.a(*)
@@ -1493,29 +1447,25 @@ LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib
  .ARM.attributes
                 0x000002ed       0x21 ..\build\application-slave\startup_stm32f103xb.o
  .ARM.attributes
-                0x0000030e       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
+                0x0000030e       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
  .ARM.attributes
-                0x0000033b       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
+                0x0000033b       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-init.o)
  .ARM.attributes
-                0x00000368       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-init.o)
+                0x00000368       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
  .ARM.attributes
-                0x00000395       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
+                0x00000395       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
  .ARM.attributes
-                0x000003c2       0x1b C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
+                0x000003c2       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
  .ARM.attributes
-                0x000003dd       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
+                0x000003ef       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-atexit.o)
  .ARM.attributes
-                0x0000040a       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
+                0x0000041c       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-fini.o)
  .ARM.attributes
-                0x00000437       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-atexit.o)
+                0x00000449       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
  .ARM.attributes
-                0x00000464       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-fini.o)
+                0x00000476       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtend.o
  .ARM.attributes
-                0x00000491       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
- .ARM.attributes
-                0x000004be       0x2d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtend.o
- .ARM.attributes
-                0x000004eb       0x1d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtn.o
+                0x000004a3       0x1d C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crtn.o
 
 .radio_config_marker
                 0x0801fc00        0x4
@@ -1528,147 +1478,147 @@ LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib
 LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libm.a
 LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libgcc.a
 
-.debug_info     0x00000000     0xb098
+.debug_info     0x00000000     0xa771
  .debug_info    0x00000000      0xd4e ..\build\application-slave\main.o
- .debug_info    0x00000d4e     0x2d86 ..\build\application-slave\app.o
- .debug_info    0x00003ad4      0x3a4 ..\build\application-slave\app_framework_led.o
- .debug_info    0x00003e78      0x36d ..\build\application-slave\app_framework_clock.o
- .debug_info    0x000041e5      0x158 ..\build\application-slave\stm32f1xx_it.o
- .debug_info    0x0000433d      0xa66 ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_info    0x00004da3      0x454 ..\build\application-slave\system_stm32f1xx.o
- .debug_info    0x000051f7      0x880 ..\build\application-slave\stm32f1xx_hal.o
- .debug_info    0x00005a77      0xb07 ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_info    0x0000657e      0x46d ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_info    0x000069eb      0x6d7 ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_info    0x000070c2      0xe3f ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_info    0x00007f01      0x6fd ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_info    0x000085fe      0xb94 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_info    0x00009192     0x1ed6 ..\build\application-slave\stm32f1xx_hal_uart.o
- .debug_info    0x0000b068       0x30 ..\build\application-slave\startup_stm32f103xb.o
+ .debug_info    0x00000d4e     0x245f ..\build\application-slave\app.o
+ .debug_info    0x000031ad      0x3a4 ..\build\application-slave\app_framework_led.o
+ .debug_info    0x00003551      0x36d ..\build\application-slave\app_framework_clock.o
+ .debug_info    0x000038be      0x158 ..\build\application-slave\stm32f1xx_it.o
+ .debug_info    0x00003a16      0xa66 ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_info    0x0000447c      0x454 ..\build\application-slave\system_stm32f1xx.o
+ .debug_info    0x000048d0      0x880 ..\build\application-slave\stm32f1xx_hal.o
+ .debug_info    0x00005150      0xb07 ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_info    0x00005c57      0x46d ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_info    0x000060c4      0x6d7 ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_info    0x0000679b      0xe3f ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_info    0x000075da      0x6fd ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_info    0x00007cd7      0xb94 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_info    0x0000886b     0x1ed6 ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_info    0x0000a741       0x30 ..\build\application-slave\startup_stm32f103xb.o
 
-.debug_abbrev   0x00000000     0x21b7
+.debug_abbrev   0x00000000     0x21dd
  .debug_abbrev  0x00000000      0x2ab ..\build\application-slave\main.o
- .debug_abbrev  0x000002ab      0x3f6 ..\build\application-slave\app.o
- .debug_abbrev  0x000006a1      0x1a3 ..\build\application-slave\app_framework_led.o
- .debug_abbrev  0x00000844      0x143 ..\build\application-slave\app_framework_clock.o
- .debug_abbrev  0x00000987       0x80 ..\build\application-slave\stm32f1xx_it.o
- .debug_abbrev  0x00000a07      0x1ce ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_abbrev  0x00000bd5      0x140 ..\build\application-slave\system_stm32f1xx.o
- .debug_abbrev  0x00000d15      0x232 ..\build\application-slave\stm32f1xx_hal.o
- .debug_abbrev  0x00000f47      0x2b8 ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_abbrev  0x000011ff      0x1d4 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_abbrev  0x000013d3      0x222 ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_abbrev  0x000015f5      0x3aa ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_abbrev  0x0000199f      0x285 ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_abbrev  0x00001c24      0x297 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_abbrev  0x00001ebb      0x2df ..\build\application-slave\stm32f1xx_hal_uart.o
- .debug_abbrev  0x0000219a       0x1d ..\build\application-slave\startup_stm32f103xb.o
+ .debug_abbrev  0x000002ab      0x41c ..\build\application-slave\app.o
+ .debug_abbrev  0x000006c7      0x1a3 ..\build\application-slave\app_framework_led.o
+ .debug_abbrev  0x0000086a      0x143 ..\build\application-slave\app_framework_clock.o
+ .debug_abbrev  0x000009ad       0x80 ..\build\application-slave\stm32f1xx_it.o
+ .debug_abbrev  0x00000a2d      0x1ce ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_abbrev  0x00000bfb      0x140 ..\build\application-slave\system_stm32f1xx.o
+ .debug_abbrev  0x00000d3b      0x232 ..\build\application-slave\stm32f1xx_hal.o
+ .debug_abbrev  0x00000f6d      0x2b8 ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_abbrev  0x00001225      0x1d4 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_abbrev  0x000013f9      0x222 ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_abbrev  0x0000161b      0x3aa ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_abbrev  0x000019c5      0x285 ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_abbrev  0x00001c4a      0x297 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_abbrev  0x00001ee1      0x2df ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_abbrev  0x000021c0       0x1d ..\build\application-slave\startup_stm32f103xb.o
 
-.debug_loc      0x00000000     0x7d55
+.debug_loc      0x00000000     0x758d
  .debug_loc     0x00000000      0x10e ..\build\application-slave\main.o
- .debug_loc     0x0000010e     0x21c0 ..\build\application-slave\app.o
- .debug_loc     0x000022ce      0x340 ..\build\application-slave\app_framework_led.o
- .debug_loc     0x0000260e       0x46 ..\build\application-slave\app_framework_clock.o
- .debug_loc     0x00002654       0x20 ..\build\application-slave\stm32f1xx_it.o
- .debug_loc     0x00002674      0x1cd ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_loc     0x00002841      0x11b ..\build\application-slave\system_stm32f1xx.o
- .debug_loc     0x0000295c      0x1f9 ..\build\application-slave\stm32f1xx_hal.o
- .debug_loc     0x00002b55      0x84d ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_loc     0x000033a2      0x3f4 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_loc     0x00003796      0x55f ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_loc     0x00003cf5      0x8b4 ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_loc     0x000045a9      0x47b ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_loc     0x00004a24      0x9d5 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_loc     0x000053f9     0x295c ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_loc     0x0000010e     0x19f8 ..\build\application-slave\app.o
+ .debug_loc     0x00001b06      0x340 ..\build\application-slave\app_framework_led.o
+ .debug_loc     0x00001e46       0x46 ..\build\application-slave\app_framework_clock.o
+ .debug_loc     0x00001e8c       0x20 ..\build\application-slave\stm32f1xx_it.o
+ .debug_loc     0x00001eac      0x1cd ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_loc     0x00002079      0x11b ..\build\application-slave\system_stm32f1xx.o
+ .debug_loc     0x00002194      0x1f9 ..\build\application-slave\stm32f1xx_hal.o
+ .debug_loc     0x0000238d      0x84d ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_loc     0x00002bda      0x3f4 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_loc     0x00002fce      0x55f ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_loc     0x0000352d      0x8b4 ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_loc     0x00003de1      0x47b ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_loc     0x0000425c      0x9d5 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_loc     0x00004c31     0x295c ..\build\application-slave\stm32f1xx_hal_uart.o
 
-.debug_aranges  0x00000000      0x970
+.debug_aranges  0x00000000      0x910
  .debug_aranges
                 0x00000000       0x60 ..\build\application-slave\main.o
  .debug_aranges
-                0x00000060      0x200 ..\build\application-slave\app.o
+                0x00000060      0x1a0 ..\build\application-slave\app.o
  .debug_aranges
-                0x00000260       0x38 ..\build\application-slave\app_framework_led.o
+                0x00000200       0x38 ..\build\application-slave\app_framework_led.o
  .debug_aranges
-                0x00000298       0x20 ..\build\application-slave\app_framework_clock.o
+                0x00000238       0x20 ..\build\application-slave\app_framework_clock.o
  .debug_aranges
-                0x000002b8       0x60 ..\build\application-slave\stm32f1xx_it.o
+                0x00000258       0x60 ..\build\application-slave\stm32f1xx_it.o
  .debug_aranges
-                0x00000318       0x30 ..\build\application-slave\stm32f1xx_hal_msp.o
+                0x000002b8       0x30 ..\build\application-slave\stm32f1xx_hal_msp.o
  .debug_aranges
-                0x00000348       0x28 ..\build\application-slave\system_stm32f1xx.o
+                0x000002e8       0x28 ..\build\application-slave\system_stm32f1xx.o
  .debug_aranges
-                0x00000370       0xe0 ..\build\application-slave\stm32f1xx_hal.o
+                0x00000310       0xe0 ..\build\application-slave\stm32f1xx_hal.o
  .debug_aranges
-                0x00000450       0x90 ..\build\application-slave\stm32f1xx_hal_rcc.o
+                0x000003f0       0x90 ..\build\application-slave\stm32f1xx_hal_rcc.o
  .debug_aranges
-                0x000004e0       0x30 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+                0x00000480       0x30 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
  .debug_aranges
-                0x00000510       0x58 ..\build\application-slave\stm32f1xx_hal_gpio.o
+                0x000004b0       0x58 ..\build\application-slave\stm32f1xx_hal_gpio.o
  .debug_aranges
-                0x00000568       0xc0 ..\build\application-slave\stm32f1xx_hal_cortex.o
+                0x00000508       0xc0 ..\build\application-slave\stm32f1xx_hal_cortex.o
  .debug_aranges
-                0x00000628       0x88 ..\build\application-slave\stm32f1xx_hal_flash.o
+                0x000005c8       0x88 ..\build\application-slave\stm32f1xx_hal_flash.o
  .debug_aranges
-                0x000006b0       0x98 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+                0x00000650       0x98 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
  .debug_aranges
-                0x00000748      0x200 ..\build\application-slave\stm32f1xx_hal_uart.o
+                0x000006e8      0x200 ..\build\application-slave\stm32f1xx_hal_uart.o
  .debug_aranges
-                0x00000948       0x28 ..\build\application-slave\startup_stm32f103xb.o
+                0x000008e8       0x28 ..\build\application-slave\startup_stm32f103xb.o
 
-.debug_ranges   0x00000000      0x8d8
+.debug_ranges   0x00000000      0x868
  .debug_ranges  0x00000000       0x50 ..\build\application-slave\main.o
- .debug_ranges  0x00000050      0x218 ..\build\application-slave\app.o
- .debug_ranges  0x00000268       0x28 ..\build\application-slave\app_framework_led.o
- .debug_ranges  0x00000290       0x10 ..\build\application-slave\app_framework_clock.o
- .debug_ranges  0x000002a0       0x50 ..\build\application-slave\stm32f1xx_it.o
- .debug_ranges  0x000002f0       0x20 ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_ranges  0x00000310       0x18 ..\build\application-slave\system_stm32f1xx.o
- .debug_ranges  0x00000328       0xd0 ..\build\application-slave\stm32f1xx_hal.o
- .debug_ranges  0x000003f8       0xa0 ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_ranges  0x00000498       0x38 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_ranges  0x000004d0       0x48 ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_ranges  0x00000518       0xb0 ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_ranges  0x000005c8       0x78 ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_ranges  0x00000640       0x88 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_ranges  0x000006c8      0x1f0 ..\build\application-slave\stm32f1xx_hal_uart.o
- .debug_ranges  0x000008b8       0x20 ..\build\application-slave\startup_stm32f103xb.o
+ .debug_ranges  0x00000050      0x1a8 ..\build\application-slave\app.o
+ .debug_ranges  0x000001f8       0x28 ..\build\application-slave\app_framework_led.o
+ .debug_ranges  0x00000220       0x10 ..\build\application-slave\app_framework_clock.o
+ .debug_ranges  0x00000230       0x50 ..\build\application-slave\stm32f1xx_it.o
+ .debug_ranges  0x00000280       0x20 ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_ranges  0x000002a0       0x18 ..\build\application-slave\system_stm32f1xx.o
+ .debug_ranges  0x000002b8       0xd0 ..\build\application-slave\stm32f1xx_hal.o
+ .debug_ranges  0x00000388       0xa0 ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_ranges  0x00000428       0x38 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_ranges  0x00000460       0x48 ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_ranges  0x000004a8       0xb0 ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_ranges  0x00000558       0x78 ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_ranges  0x000005d0       0x88 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_ranges  0x00000658      0x1f0 ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_ranges  0x00000848       0x20 ..\build\application-slave\startup_stm32f103xb.o
 
-.debug_line     0x00000000     0x7ff2
+.debug_line     0x00000000     0x780e
  .debug_line    0x00000000      0x5bc ..\build\application-slave\main.o
- .debug_line    0x000005bc     0x1c84 ..\build\application-slave\app.o
- .debug_line    0x00002240      0x29d ..\build\application-slave\app_framework_led.o
- .debug_line    0x000024dd      0x23b ..\build\application-slave\app_framework_clock.o
- .debug_line    0x00002718      0x12b ..\build\application-slave\stm32f1xx_it.o
- .debug_line    0x00002843      0x351 ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_line    0x00002b94      0x276 ..\build\application-slave\system_stm32f1xx.o
- .debug_line    0x00002e0a      0x53a ..\build\application-slave\stm32f1xx_hal.o
- .debug_line    0x00003344      0xcd7 ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_line    0x0000401b      0x4ba ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_line    0x000044d5      0x5d2 ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_line    0x00004aa7      0x6b0 ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_line    0x00005157      0x71d ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_line    0x00005874      0x8ff ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_line    0x00006173     0x1e0d ..\build\application-slave\stm32f1xx_hal_uart.o
- .debug_line    0x00007f80       0x72 ..\build\application-slave\startup_stm32f103xb.o
+ .debug_line    0x000005bc     0x14a0 ..\build\application-slave\app.o
+ .debug_line    0x00001a5c      0x29d ..\build\application-slave\app_framework_led.o
+ .debug_line    0x00001cf9      0x23b ..\build\application-slave\app_framework_clock.o
+ .debug_line    0x00001f34      0x12b ..\build\application-slave\stm32f1xx_it.o
+ .debug_line    0x0000205f      0x351 ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_line    0x000023b0      0x276 ..\build\application-slave\system_stm32f1xx.o
+ .debug_line    0x00002626      0x53a ..\build\application-slave\stm32f1xx_hal.o
+ .debug_line    0x00002b60      0xcd7 ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_line    0x00003837      0x4ba ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_line    0x00003cf1      0x5d2 ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_line    0x000042c3      0x6b0 ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_line    0x00004973      0x71d ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_line    0x00005090      0x8ff ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_line    0x0000598f     0x1e0d ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_line    0x0000779c       0x72 ..\build\application-slave\startup_stm32f103xb.o
 
-.debug_str      0x00000000     0x2e91
- .debug_str     0x00000000     0x2e91 ..\build\application-slave\main.o
+.debug_str      0x00000000     0x2d19
+ .debug_str     0x00000000     0x2d19 ..\build\application-slave\main.o
                                 0x813 (size before relaxing)
- .debug_str     0x00002e91     0x1209 ..\build\application-slave\app.o
- .debug_str     0x00002e91      0x28c ..\build\application-slave\app_framework_led.o
- .debug_str     0x00002e91      0x3b1 ..\build\application-slave\app_framework_clock.o
- .debug_str     0x00002e91      0x1f4 ..\build\application-slave\stm32f1xx_it.o
- .debug_str     0x00002e91      0x64e ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_str     0x00002e91      0x284 ..\build\application-slave\system_stm32f1xx.o
- .debug_str     0x00002e91      0x803 ..\build\application-slave\stm32f1xx_hal.o
- .debug_str     0x00002e91      0x600 ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_str     0x00002e91      0x3a8 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_str     0x00002e91      0x3d5 ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_str     0x00002e91      0x8a8 ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_str     0x00002e91      0x504 ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_str     0x00002e91      0x61a ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_str     0x00002e91      0xc63 ..\build\application-slave\stm32f1xx_hal_uart.o
- .debug_str     0x00002e91       0x5d ..\build\application-slave\startup_stm32f103xb.o
+ .debug_str     0x00002d19     0x107c ..\build\application-slave\app.o
+ .debug_str     0x00002d19      0x28c ..\build\application-slave\app_framework_led.o
+ .debug_str     0x00002d19      0x3b1 ..\build\application-slave\app_framework_clock.o
+ .debug_str     0x00002d19      0x1f4 ..\build\application-slave\stm32f1xx_it.o
+ .debug_str     0x00002d19      0x64e ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_str     0x00002d19      0x284 ..\build\application-slave\system_stm32f1xx.o
+ .debug_str     0x00002d19      0x803 ..\build\application-slave\stm32f1xx_hal.o
+ .debug_str     0x00002d19      0x600 ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_str     0x00002d19      0x3a8 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_str     0x00002d19      0x3d5 ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_str     0x00002d19      0x8a8 ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_str     0x00002d19      0x504 ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_str     0x00002d19      0x61a ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_str     0x00002d19      0xc63 ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_str     0x00002d19       0x5d ..\build\application-slave\startup_stm32f103xb.o
 
 .comment        0x00000000       0x45
  .comment       0x00000000       0x45 ..\build\application-slave\main.o
@@ -1688,37 +1638,30 @@ LOAD C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib
  .comment       0x00000045       0x46 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
  .comment       0x00000045       0x46 ..\build\application-slave\stm32f1xx_hal_uart.o
 
-.debug_frame    0x00000000     0x1ae4
+.debug_frame    0x00000000     0x1920
  .debug_frame   0x00000000       0xe4 ..\build\application-slave\main.o
- .debug_frame   0x000000e4      0x6d8 ..\build\application-slave\app.o
- .debug_frame   0x000007bc       0x70 ..\build\application-slave\app_framework_led.o
- .debug_frame   0x0000082c       0x30 ..\build\application-slave\app_framework_clock.o
- .debug_frame   0x0000085c       0xa8 ..\build\application-slave\stm32f1xx_it.o
- .debug_frame   0x00000904       0x64 ..\build\application-slave\stm32f1xx_hal_msp.o
- .debug_frame   0x00000968       0x30 ..\build\application-slave\system_stm32f1xx.o
- .debug_frame   0x00000998      0x1cc ..\build\application-slave\stm32f1xx_hal.o
- .debug_frame   0x00000b64      0x190 ..\build\application-slave\stm32f1xx_hal_rcc.o
- .debug_frame   0x00000cf4       0x68 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
- .debug_frame   0x00000d5c       0xe4 ..\build\application-slave\stm32f1xx_hal_gpio.o
- .debug_frame   0x00000e40      0x19c ..\build\application-slave\stm32f1xx_hal_cortex.o
- .debug_frame   0x00000fdc      0x134 ..\build\application-slave\stm32f1xx_hal_flash.o
- .debug_frame   0x00001110      0x194 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
- .debug_frame   0x000012a4      0x5c0 ..\build\application-slave\stm32f1xx_hal_uart.o
- .debug_frame   0x00001864       0x38 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
- .debug_frame   0x0000189c       0x2c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
- .debug_frame   0x000018c8       0x2c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-init.o)
- .debug_frame   0x000018f4       0xb0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
- .debug_frame   0x000019a4       0x3c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
- .debug_frame   0x000019e0       0x20 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
- .debug_frame   0x00001a00       0x5c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
- .debug_frame   0x00001a5c       0x20 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-atexit.o)
- .debug_frame   0x00001a7c       0x34 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-fini.o)
- .debug_frame   0x00001ab0       0x34 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
-
-.debug_line_str
-                0x00000000       0xdf
- .debug_line_str
-                0x00000000       0xdf C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
+ .debug_frame   0x000000e4      0x588 ..\build\application-slave\app.o
+ .debug_frame   0x0000066c       0x70 ..\build\application-slave\app_framework_led.o
+ .debug_frame   0x000006dc       0x30 ..\build\application-slave\app_framework_clock.o
+ .debug_frame   0x0000070c       0xa8 ..\build\application-slave\stm32f1xx_it.o
+ .debug_frame   0x000007b4       0x64 ..\build\application-slave\stm32f1xx_hal_msp.o
+ .debug_frame   0x00000818       0x30 ..\build\application-slave\system_stm32f1xx.o
+ .debug_frame   0x00000848      0x1cc ..\build\application-slave\stm32f1xx_hal.o
+ .debug_frame   0x00000a14      0x190 ..\build\application-slave\stm32f1xx_hal_rcc.o
+ .debug_frame   0x00000ba4       0x68 ..\build\application-slave\stm32f1xx_hal_rcc_ex.o
+ .debug_frame   0x00000c0c       0xe4 ..\build\application-slave\stm32f1xx_hal_gpio.o
+ .debug_frame   0x00000cf0      0x19c ..\build\application-slave\stm32f1xx_hal_cortex.o
+ .debug_frame   0x00000e8c      0x134 ..\build\application-slave\stm32f1xx_hal_flash.o
+ .debug_frame   0x00000fc0      0x194 ..\build\application-slave\stm32f1xx_hal_flash_ex.o
+ .debug_frame   0x00001154      0x5c0 ..\build\application-slave\stm32f1xx_hal_uart.o
+ .debug_frame   0x00001714       0x2c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
+ .debug_frame   0x00001740       0x2c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-init.o)
+ .debug_frame   0x0000176c       0xb0 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-lock.o)
+ .debug_frame   0x0000181c       0x20 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
+ .debug_frame   0x0000183c       0x5c C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__call_atexit.o)
+ .debug_frame   0x00001898       0x20 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-atexit.o)
+ .debug_frame   0x000018b8       0x34 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-fini.o)
+ .debug_frame   0x000018ec       0x34 C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-__atexit.o)
 
 Cross Reference Table
 
@@ -2208,8 +2151,6 @@ huart3                                            ..\build\application-slave\mai
 main                                              ..\build\application-slave\main.o
                                                   ..\build\application-slave\startup_stm32f103xb.o
                                                   C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crt0.o
-memcmp                                            C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memcmp.o)
-                                                  ..\build\application-slave\app.o
 memset                                            C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-memset.o)
                                                   C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-findfp.o)
                                                   ..\build\application-slave\app_framework_clock.o
@@ -2218,8 +2159,6 @@ memset                                            C:/Program Files (x86)/Arm GNU
 pFlash                                            ..\build\application-slave\stm32f1xx_hal_flash.o
                                                   ..\build\application-slave\stm32f1xx_hal_flash_ex.o
 software_init_hook                                C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp/crt0.o
-strcmp                                            C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strcmp.o)
-                                                  ..\build\application-slave\app.o
 strlen                                            C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-strlen-stub.o)
                                                   ..\build\application-slave\app.o
 sysconf                                           C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/bin/../lib/gcc/arm-none-eabi/14.2.1/thumb/v7-m/nofp\libc.a(libc_a-sysconf.o)

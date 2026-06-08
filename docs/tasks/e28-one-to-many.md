@@ -107,7 +107,6 @@ CFG FILTER=0
 CFG ACK=1
 CFG ACK=0
 CFG SAVE
-CFG APPLY
 CFG DEFAULT
 ```
 
@@ -122,7 +121,7 @@ CFG DEFAULT
 - `CFG FILTER=1/0`：启用或关闭 `TARGET/SRC` 帧过滤。
 - `CFG ACK=1/0`：启用或关闭 ACK。
 - `CFG SAVE`：保存运行时配置到 MCU Flash。
-- `CFG APPLY`：立即按当前配置重新生成 E28 参数并执行配置流程。
+- `CFG SAVE`：保存当前配置后重启，启动时按新配置重新生成 E28 参数并执行配置流程。
 - `CFG DEFAULT`：恢复默认配置并清除 E28 配置 marker。
 
 建议返回：
@@ -221,7 +220,7 @@ C0 00 03 28 18 04
 7. 保持首次烧录配置一次的逻辑，但配置 marker 必须与运行时参数绑定：
    - 同一角色、同一 ID、同一信道、同一 option，配置成功后可跳过重复配置。
    - 修改角色、ID、信道、option 后，必须重新配置 E28。
-8. 提供 `CFG APPLY` 立即重新配置 E28 的能力。
+8. `CFG SAVE` 保存配置后重启，并在启动时按新配置重新配置 E28。
 
 ## 目标接收端区分要求
 
@@ -430,7 +429,6 @@ powershell -ExecutionPolicy Bypass -File .\build.ps1 -Project application
    CFG FILTER=1
    CFG ACK=1
    CFG SAVE
-   CFG APPLY
    ```
 
 3. 配置从站 1：
@@ -442,7 +440,6 @@ powershell -ExecutionPolicy Bypass -File .\build.ps1 -Project application
    CFG FILTER=1
    CFG ACK=1
    CFG SAVE
-   CFG APPLY
    ```
 
 4. 配置从站 2：
@@ -454,7 +451,6 @@ powershell -ExecutionPolicy Bypass -File .\build.ps1 -Project application
    CFG FILTER=1
    CFG ACK=1
    CFG SAVE
-   CFG APPLY
    ```
 
 5. 查询配置：
@@ -483,7 +479,7 @@ C0 00 01 28 18 04
 C0 00 02 28 18 04
 ```
 
-修改角色或 ID 后，再执行 `CFG APPLY`，必须重新生成并写入对应 E28 配置。
+修改角色或 ID 后，执行 `CFG SAVE` 并重启后，必须重新生成并写入对应 E28 配置。
 
 ### 重启保存验证
 
@@ -492,7 +488,7 @@ C0 00 02 28 18 04
 3. 执行 `CFG?`。
 4. 应显示仍为 `ROLE=SLAVE, ID=2`。
 5. 如果 E28 marker 与该配置匹配，不应重复配置 E28。
-6. 如果修改 `ID=3` 并 `CFG APPLY`，应重新配置为 `C0 00 03 28 18 04`。
+6. 如果修改 `ID=3` 并执行 `CFG SAVE` 后，应重新配置为 `C0 00 03 28 18 04`。
 
 ### 一对多广播验证
 

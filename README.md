@@ -113,7 +113,6 @@ CFG OPTION=0x04
 CFG FILTER=1
 CFG ACK=1
 CFG SAVE
-CFG APPLY
 ```
 
 主站应用后，E28 应配置为：
@@ -133,7 +132,6 @@ CFG OPTION=0x04
 CFG FILTER=1
 CFG ACK=1
 CFG SAVE
-CFG APPLY
 ```
 
 从站 1 应配置为：
@@ -153,7 +151,6 @@ CFG OPTION=0x04
 CFG FILTER=1
 CFG ACK=1
 CFG SAVE
-CFG APPLY
 ```
 
 从站 2 应配置为：
@@ -178,7 +175,6 @@ C0 00 02 28 18 04
 | `CFG ACK=1` | 启用 ACK |
 | `CFG ACK=0` | 关闭 ACK |
 | `CFG SAVE` | 保存当前运行时配置到 MCU Flash |
-| `CFG APPLY` | 立即根据当前配置重新配置 E28 |
 | `CFG DEFAULT` | 恢复默认配置并清除 E28 marker |
 
 建议使用：
@@ -253,19 +249,17 @@ E28 透明广播/监听不能解决多个从站同时回传的空口碰撞。实
 ## 构建
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\build_app.ps1 -Role master -LocalId 1
-powershell -ExecutionPolicy Bypass -File .\build_app.ps1 -Role slave -LocalId 1
-powershell -ExecutionPolicy Bypass -File .\build_app.ps1 -Role slave -LocalId 2
+powershell -ExecutionPolicy Bypass -File .\build_app.ps1
 ```
 
 说明：构建参数只作为默认值/出厂值，实际角色、ID、信道、过滤和 ACK 可通过串口命令运行时修改并保存到 Flash。
 
 ## 建议验证步骤
 
-1. 分别烧录 1 个主站、2 个从站。
+1. 给所有设备烧录同一个 `build\application\application.hex` 固件。
 2. 通过串口执行 `CFG?` 确认配置。
-3. 主站执行 `CFG ROLE=MASTER`、`CFG SAVE`、`CFG APPLY`。
-4. 从站分别执行 `CFG ROLE=SLAVE`、`CFG ID=1/2`、`CFG SAVE`、`CFG APPLY`。
+3. 主站执行 `CFG ROLE=MASTER`、`CFG SAVE`。
+4. 从站分别执行 `CFG ROLE=SLAVE`、`CFG ID=1/2`、`CFG SAVE`。
 5. 抓 E28 配置帧，确认主站为 `C0 FF FF 28 18 04`，从站 1 为 `C0 00 01 28 18 04`，从站 2 为 `C0 00 02 28 18 04`。
 6. 测试 `TARGET=0xFF` 广播帧，两个从站都应处理。
 7. 测试 `TARGET=0x01`，只有从站 1 处理。

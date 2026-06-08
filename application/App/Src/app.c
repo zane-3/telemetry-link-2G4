@@ -127,7 +127,6 @@ static bool App_ConfigCommandPrefixMatches(void);
 static bool App_ParseConfigAssignment(char *key, uint16_t key_size, uint16_t *value, bool *hex_prefixed);
 static bool App_ParseConfigRole(uint32_t *role);
 static bool App_ParseConfigNumber(const uint8_t *bytes, uint16_t length, uint16_t *value);
-static bool App_ApplyRadioRuntimeConfig(void);
 static void App_PrintRuntimeConfig(void);
 static void App_WriteHostString(const char *text);
 static void App_WriteHostHex16(uint16_t value);
@@ -1194,18 +1193,6 @@ static bool App_ParseConfigNumber(const uint8_t *bytes, uint16_t length, uint16_
   }
 
   *value = parsed;
-  return true;
-}
-
-static bool App_ApplyRadioRuntimeConfig(void)
-{
-  if (!App_ConfigureRadioOnFirstBoot())
-  {
-    return false;
-  }
-  App_FrameParserReset(&g_app.host_frame_parser);
-  App_FrameParserReset(&g_app.radio_frame_parser);
-  g_app.pending_ack.active = false;
   return true;
 }
 

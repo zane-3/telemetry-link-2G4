@@ -22,7 +22,7 @@ except ImportError as exc:
 
 BAUDRATE = 115200
 READ_GAP_S = 0.25
-CFG_APPLY_WAIT_S = 4.0
+CFG_REBOOT_WAIT_S = 4.0
 
 
 def checksum(data: bytes) -> int:
@@ -99,7 +99,7 @@ def configure_device(port: str, role: str, local_id: int, remote_id: int = 1) ->
                 time.sleep(1.0)
 
         print(f"[{port}] waiting for reboot")
-        time.sleep(CFG_APPLY_WAIT_S)
+        time.sleep(CFG_REBOOT_WAIT_S)
         print(f"[{port}] verify")
         print_text(enter_cfg_mode(ser) + send_cfg(ser, "CFG?"))
 
