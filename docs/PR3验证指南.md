@@ -14,13 +14,7 @@
 
 ### 软件准备
 - 串口调试工具（推荐：PuTTY、RealTerm、串口助手）
-- Python 3.x + pyserial（用于自动化测试）
-- 本项目的测试脚本
-
-### 安装 Python 依赖
-```bash
-python -m pip install pyserial
-```
+- 支持 HEX 原始字节发送的串口工具
 
 ---
 
@@ -183,12 +177,7 @@ CFG SAVE
 
 #### 2.2 测试广播帧（TARGET=0xFF）
 
-**使用 Python 脚本发送：**
-```bash
-python test_one_to_many.py --master COM3 --slave1 COM4 --slave2 COM5
-```
-
-或**手动发送 HEX 原始字节**（通过串口工具的 HEX 发送功能）：
+**手动发送 HEX 原始字节**（通过串口工具的 HEX 发送功能）：
 
 从主站（ID=2）广播到所有从站：
 ```text
@@ -237,9 +226,10 @@ CFG ACK=1
 CFG SAVE
 ```
 
-使用测试脚本验证 ACK：
-```bash
-python test_one_to_many.py --master COM3 --slave1 COM4 --ack-test
+在主站串口工具中以 HEX 原始字节发送单播帧：
+
+```text
+A5 04 01 02 11 21 D9
 ```
 
 **预期：**
@@ -258,7 +248,7 @@ python test_one_to_many.py --master COM3 --slave1 COM4 --ack-test
 
 2. **Checksum 错误**
    - 计算公式：`checksum = sum(所有字节) & 0xFF`
-   - 使用测试脚本自动生成正确的 checksum
+   - 可用计算器或串口工具宏功能提前保存已校验的测试帧
 
 3. **LEN 字段错误**
    - `LEN` = `TARGET + SRC + SEQ + CMD + payload` 的字节数
@@ -276,36 +266,18 @@ python test_one_to_many.py --master COM3 --slave1 COM4 --ack-test
 
 ## 任务 3：诊断和问题定位
 
-### 3.1 使用自动化测试脚本
+### 3.1 串口配置复核
 
-**查询设备配置：**
-```bash
-python test_one_to_many.py --query COM3
+每台设备通过串口发送：
+
+```text
++++
+CFG?
 ```
 
-**列出所有串口：**
-```bash
-python test_one_to_many.py --list
-```
+记录 `ROLE`、`ID`、`REMOTE`、`CH`、`FILTER`、`ACK` 和 `E28`。如果某项不符合预期，按任务 1/2 的配置命令重新配置并执行 `CFG SAVE`。
 
-**自动配置主从站：**
-```bash
-python test_one_to_many.py --master COM3 --slave1 COM4 --slave2 COM5 --configure
-```
-
-**运行完整测试：**
-```bash
-python test_one_to_many.py --master COM3 --slave1 COM4 --slave2 COM5 --test-all
-```
-
-### 3.2 PowerShell 诊断脚本
-
-运行 E28 无线诊断工具：
-```powershell
-powershell -ExecutionPolicy Bypass -File .\test_e28_wireless.ps1 -MasterPort COM7 -SlavePort COM6
-```
-
-### 3.3 查看固件诊断计数器
+### 3.2 查看固件诊断计数器
 
 通过串口发送特殊命令（如果固件支持）：
 ```text
@@ -337,9 +309,9 @@ DIAG?
 - ACK 机制正常（如果启用）
 
 ### ✅ 任务 3 通过标准
-- 自动化测试脚本能正常运行
+- 每台设备 `CFG?` 返回值符合角色和信道规划
 - 诊断计数器符合预期
-- 能快速定位通信失败原因
+- 能通过配置、帧格式和计数器定位通信失败原因
 
 ---
 

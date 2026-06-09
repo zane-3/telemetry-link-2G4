@@ -1,0 +1,28 @@
+# Build artifacts
+build/**/*.o
+build/**/*.d
+build/**/*.lst
+build/**/*.su
+
+# Keep final artifacts
+!build/**/*.hex
+!build/**/*.bin
+!build/**/*.elf
+!build/**/*.map
+
+# Editor and IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
