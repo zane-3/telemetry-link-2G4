@@ -1,0 +1,375 @@
+# PR #3 验证指南
+
+## 概述
+
+本文档描述如何验证 PR #3 合并后的"一对多代码/配置同步"功能。验证分为 3 个层次，按顺序执行。
+
+## 前置准备
+
+### 硬件准备
+- 1 个主站设备（已烧录统一固件）
+- 2+ 个从站设备（已烧录统一固件）
+- USB 转串口适配器（每个设备 1 个）
+- 天线（每个 E28 模块 1 根）
+
+### 软件准备
+- 串口调试工具（推荐：PuTTY、RealTerm、串口助手）
+- Python 3.x + pyserial（用于自动化测试）
+- 本项目的测试脚本
+
+### 安装 Python 依赖
+```bash
+python -m pip install pyserial
+```
+
+---
+
+## 任务 1：验证 E28 无线透明层（FILTER=0）
+
+### 目的
+确认 E28 模块的无线透明传输层是否正常工作，排除硬件和配置问题。
+
+### 步骤
+
+#### 1.1 配置主站
+连接主站串口（115200 8N1），发送配置命令：
+
+```text
++++
+CFG ROLE=MASTER
+CFG ID=2
+CFG REMOTE=1
+CFG CH=0x18
+CFG OPTION=0x04
+CFG FILTER=0
+CFG ACK=0
+CFG SAVE
+```
+
+**预期输出：**
+```text
+OK CFG MODE
+OK
+OK
+OK
+OK
+OK
+OK
+OK
+OK SAVED, REBOOTING...
+```
+
+等待 4 秒重启完成，然后查询配置：
+
+```text
+CFG?
+```
+
+**预期输出（关键检查项）：**
+```text
+CFG ROLE=MASTER ID=0002 REMOTE=0001 CH=0018 OPTION=0004 FILTER=0 ACK=0 E28=FFFF
+```
+
+**✅ 验证点：**
+- `ROLE=MASTER` ✓
+- `E28=FFFF` ✓（主站地址必须是 0xFFFF）
+- `FILTER=0` ✓（透明传输模式）
+
+#### 1.2 配置从站 1
+连接从站 1 串口（115200 8N1），发送配置命令：
+
+```text
++++
+CFG ROLE=SLAVE
+CFG ID=1
+CFG REMOTE=2
+CFG CH=0x18
+CFG OPTION=0x04
+CFG FILTER=0
+CFG ACK=0
+CFG SAVE
+```
+
+查询配置：
+
+```text
+CFG?
+```
+
+**预期输出（关键检查项）：**
+```text
+CFG ROLE=SLAVE ID=0001 REMOTE=0002 CH=0018 OPTION=0004 FILTER=0 ACK=0 E28=0001
+```
+
+**✅ 验证点：**
+- `ROLE=SLAVE` ✓
+- `E28=0001` ✓（从站 ID=1 对应地址 0x0001）
+- `CH=0018` ✓（与主站信道一致）
+
+#### 1.3 配置从站 2（可选）
+重复步骤 1.2，但使用 `CFG ID=2`，预期 `E28=0002`。
+
+#### 1.4 测试透明传输
+**在主站发送：**
+```text
+TEST_FROM_MASTER
+```
+
+**在从站 1 和从站 2 应该收到：**
+```text
+TEST_FROM_MASTER
+```
+
+**在从站 1 发送：**
+```text
+REPLY_FROM_SLAVE1
+```
+
+**在主站应该收到：**
+```text
+REPLY_FROM_SLAVE1
+```
+
+### 故障排查
+
+**如果收不到数据，按以下顺序检查：**
+
+1. **信道不一致**
+   - 所有设备的 `CH` 必须相同（例如都是 `0x18`）
+   - 用 `CFG?` 确认每个设备的 `CH` 值
+
+2. **E28 地址错误**
+   - 主站必须是 `E28=FFFF`
+   - 从站必须是 `E28=0001`、`E28=0002` 等
+   - 如果地址错误，检查 `ROLE` 和 `ID` 配置
+
+3. **E28 模式错误**
+   - E28 应该在传输模式（M0=0, M1=0, M2=1）
+   - 检查硬件引脚连接
+   - 检查固件是否正确切换模式
+
+4. **硬件连接**
+   - TX/RX 是否接反
+   - 供电是否稳定（3.3V）
+   - 天线是否连接
+   - 模块是否损坏或焊接不良
+
+5. **距离和环境**
+   - 两个设备是否太远（>100m 室外，>30m 室内）
+   - 是否有强干扰源（WiFi 路由器、蓝牙设备）
+
+---
+
+## 任务 2：验证业务帧过滤层（FILTER=1）
+
+### 前提条件
+✅ **任务 1 必须通过**（FILTER=0 透明传输正常）
+
+### 目的
+验证 MCU 的业务帧解析、目标过滤和 checksum 校验是否正常。
+
+### 步骤
+
+#### 2.1 切换到业务帧模式
+在主站和所有从站执行：
+
+```text
++++
+CFG FILTER=1
+CFG SAVE
+```
+
+重启后查询配置，确认 `FILTER=1`。
+
+#### 2.2 测试广播帧（TARGET=0xFF）
+
+**使用 Python 脚本发送：**
+```bash
+python test_one_to_many.py --master COM3 --slave1 COM4 --slave2 COM5
+```
+
+或**手动发送 HEX 原始字节**（通过串口工具的 HEX 发送功能）：
+
+从主站（ID=2）广播到所有从站：
+```text
+A5 04 FF 02 10 20 D4
+```
+
+**帧格式：**
+- `A5` = 帧头
+- `04` = 长度（4 字节 = TARGET + SRC + SEQ + CMD）
+- `FF` = 目标（广播）
+- `02` = 源（主站 ID）
+- `10` = 序列号
+- `20` = 命令
+- `D4` = checksum
+
+**预期结果：**
+- 所有从站都应该收到并输出此帧
+- 主站不会处理（因为 TARGET=0xFF 是发出去的广播）
+
+#### 2.3 测试单播帧（TARGET=特定 ID）
+
+从主站（ID=2）发送给从站 1（ID=1）：
+```text
+A5 04 01 02 11 21 D9
+```
+
+**预期结果：**
+- ✅ 从站 1（ID=1）应该收到并输出此帧
+- ❌ 从站 2（ID=2）应该**丢弃**此帧（TARGET=1 不匹配）
+
+从从站 1（ID=1）回复给主站（ID=2）：
+```text
+A5 04 02 01 12 22 DB
+```
+
+**预期结果：**
+- ✅ 主站应该收到（MASTER 接收所有帧）
+- ❌ 从站 2 应该丢弃（TARGET=2 且自己不是 ID=2）
+
+#### 2.4 测试 ACK 机制
+切换到 ACK 模式：
+
+```text
++++
+CFG ACK=1
+CFG SAVE
+```
+
+使用测试脚本验证 ACK：
+```bash
+python test_one_to_many.py --master COM3 --slave1 COM4 --ack-test
+```
+
+**预期：**
+- 主站发送命令帧
+- 从站收到后自动回复 ACK
+- 主站收到 ACK，不触发超时
+
+### 故障排查
+
+**如果 FILTER=0 能通，但 FILTER=1 收不到：**
+
+1. **发送的不是 HEX 原始字节**
+   - 确认串口工具使用"HEX 发送"功能
+   - 不要发送 ASCII 字符串 "A5 04 FF..."
+   - 正确：发送字节 `[0xA5, 0x04, 0xFF, ...]`
+
+2. **Checksum 错误**
+   - 计算公式：`checksum = sum(所有字节) & 0xFF`
+   - 使用测试脚本自动生成正确的 checksum
+
+3. **LEN 字段错误**
+   - `LEN` = `TARGET + SRC + SEQ + CMD + payload` 的字节数
+   - 最小值 = 4（无 payload）
+
+4. **TARGET 不匹配**
+   - 从站只处理 `TARGET == 自己的ID` 或 `TARGET == 0xFF`
+   - 主站处理所有接收到的帧
+
+5. **帧被丢弃**
+   - 查看固件的 `g_app_diag_frame_drop_count` 计数
+   - 如果 drop count 增加，说明帧格式有问题
+
+---
+
+## 任务 3：诊断和问题定位
+
+### 3.1 使用自动化测试脚本
+
+**查询设备配置：**
+```bash
+python test_one_to_many.py --query COM3
+```
+
+**列出所有串口：**
+```bash
+python test_one_to_many.py --list
+```
+
+**自动配置主从站：**
+```bash
+python test_one_to_many.py --master COM3 --slave1 COM4 --slave2 COM5 --configure
+```
+
+**运行完整测试：**
+```bash
+python test_one_to_many.py --master COM3 --slave1 COM4 --slave2 COM5 --test-all
+```
+
+### 3.2 PowerShell 诊断脚本
+
+运行 E28 无线诊断工具：
+```powershell
+powershell -ExecutionPolicy Bypass -File .\test_e28_wireless.ps1 -MasterPort COM7 -SlavePort COM6
+```
+
+### 3.3 查看固件诊断计数器
+
+通过串口发送特殊命令（如果固件支持）：
+```text
++++
+DIAG?
+```
+
+**查看的关键计数器：**
+- `uart1_rx_count` / `uart1_tx_count` - Host UART 收发字节数
+- `uart3_rx_count` / `uart3_tx_count` - Radio UART 收发字节数
+- `frame_rx_count` - 收到的有效业务帧数
+- `frame_drop_count` - 丢弃的无效帧数
+- `ack_tx_count` / `ack_rx_count` - ACK 发送/接收计数
+- `ack_timeout_count` - ACK 超时计数
+
+---
+
+## 验证通过标准
+
+### ✅ 任务 1 通过标准
+- 主站 `E28=FFFF`，从站 `E28=0001/0002/...`
+- FILTER=0 模式下，主从站能互相收发普通字符串
+- 所有设备 `CH` 一致
+
+### ✅ 任务 2 通过标准
+- FILTER=1 模式下，广播帧（TARGET=0xFF）所有从站都能收到
+- 单播帧只有目标从站处理，其他从站丢弃
+- Checksum 错误的帧被丢弃
+- ACK 机制正常（如果启用）
+
+### ✅ 任务 3 通过标准
+- 自动化测试脚本能正常运行
+- 诊断计数器符合预期
+- 能快速定位通信失败原因
+
+---
+
+## 常见问题 FAQ
+
+### Q1: 为什么 FILTER=1 时发送 "TEST" 收不到？
+**A:** FILTER=1 模式下，MCU 只输出符合 `0xA5 + LEN + TARGET/SRC/SEQ/CMD + checksum` 格式的业务帧。普通 ASCII 字符串会被丢弃。要测试透明传输，使用 `CFG FILTER=0`。
+
+### Q2: 主站和从站用的是相同固件吗？
+**A:** 是的。PR #3 合并后，使用统一固件，通过 `CFG ROLE=MASTER/SLAVE` 配置角色，不再需要烧录不同固件。
+
+### Q3: CFG SAVE 后需要单独执行 CFG APPLY 吗？
+**A:** 不需要。`CFG SAVE` 已包含保存并重启的功能，重启后自动应用配置。
+
+### Q4: 从站之间能直接通信吗？
+**A:** 可以。在透明广播模式下，所有设备都能互相收到数据。但在 FILTER=1 模式下，从站只处理 TARGET 匹配自己 ID 或为 0xFF 的帧。
+
+### Q5: 如何确认 E28 进入了传输模式？
+**A:** 查看 E28 的 AUX 引脚（如果引出），或在配置后用示波器/逻辑分析仪查看 M0/M1/M2 引脚状态。固件启动后会输出 LED 闪烁（500ms 周期），表示进入正常工作模式。
+
+---
+
+## 相关文档
+
+- [生产配置指南](./生产配置指南.md)
+- [README.md](../README.md)
+- [E28 一对多任务文档](./tasks/e28-one-to-many.md)
+
+---
+
+**文档版本：** v1.0  
+**更新日期：** 2026-06-09  
+**适用固件：** v1.1+
