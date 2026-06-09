@@ -1,4 +1,5 @@
-../build/application/app.o: App/Src/app.c App/Inc/app.h Core/Inc/main.h \
+../build/application/app.o: App/Src/app.c App/Src/app_legacy.c \
+ App/Inc/app.h Core/Inc/main.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h \
  Core/Inc/stm32f1xx_hal_conf.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h \
@@ -23,6 +24,7 @@
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h \
  ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h \
  App/Inc/app_config.h Framework/Inc/app_framework_led.h
+App/Src/app_legacy.c:
 App/Inc/app.h:
 Core/Inc/main.h:
 ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h:
