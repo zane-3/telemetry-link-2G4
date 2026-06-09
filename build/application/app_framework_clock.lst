@@ -1,0 +1,217 @@
+ARM GAS  C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"app_framework_clock.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Framework/Src/app_framework_clock.c"
+  18              		.section	.text.AppFrameworkClock_ConfigHsePll6AdcDiv6,"ax",%progbits
+  19              		.align	1
+  20              		.global	AppFrameworkClock_ConfigHsePll6AdcDiv6
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	AppFrameworkClock_ConfigHsePll6AdcDiv6:
+  26              	.LFB65:
+   1:Framework/Src/app_framework_clock.c **** #include "app_framework_clock.h"
+   2:Framework/Src/app_framework_clock.c **** 
+   3:Framework/Src/app_framework_clock.c **** HAL_StatusTypeDef AppFrameworkClock_ConfigHsePll6AdcDiv6(void)
+   4:Framework/Src/app_framework_clock.c **** {
+  27              		.loc 1 4 1 view -0
+  28              		.cfi_startproc
+  29              		@ args = 0, pretend = 0, frame = 80
+  30              		@ frame_needed = 0, uses_anonymous_args = 0
+  31 0000 10B5     		push	{r4, lr}
+  32              	.LCFI0:
+  33              		.cfi_def_cfa_offset 8
+  34              		.cfi_offset 4, -8
+  35              		.cfi_offset 14, -4
+  36 0002 94B0     		sub	sp, sp, #80
+  37              	.LCFI1:
+  38              		.cfi_def_cfa_offset 88
+   5:Framework/Src/app_framework_clock.c ****   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  39              		.loc 1 5 3 view .LVU1
+  40              		.loc 1 5 22 is_stmt 0 view .LVU2
+  41 0004 0AAC     		add	r4, sp, #40
+  42 0006 2822     		movs	r2, #40
+  43 0008 0021     		movs	r1, #0
+  44 000a 2046     		mov	r0, r4
+  45 000c FFF7FEFF 		bl	memset
+  46              	.LVL0:
+   6:Framework/Src/app_framework_clock.c ****   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  47              		.loc 1 6 3 is_stmt 1 view .LVU3
+  48              		.loc 1 6 22 is_stmt 0 view .LVU4
+  49 0010 0023     		movs	r3, #0
+  50 0012 0593     		str	r3, [sp, #20]
+  51 0014 0693     		str	r3, [sp, #24]
+  52 0016 0793     		str	r3, [sp, #28]
+ARM GAS  C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s 			page 2
+
+
+  53 0018 0893     		str	r3, [sp, #32]
+  54 001a 0993     		str	r3, [sp, #36]
+   7:Framework/Src/app_framework_clock.c ****   RCC_PeriphCLKInitTypeDef PeriphClkInit = {0};
+  55              		.loc 1 7 3 is_stmt 1 view .LVU5
+  56              		.loc 1 7 28 is_stmt 0 view .LVU6
+  57 001c 0193     		str	r3, [sp, #4]
+  58 001e 0293     		str	r3, [sp, #8]
+  59 0020 0393     		str	r3, [sp, #12]
+  60 0022 0493     		str	r3, [sp, #16]
+   8:Framework/Src/app_framework_clock.c **** 
+   9:Framework/Src/app_framework_clock.c ****   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  61              		.loc 1 9 3 is_stmt 1 view .LVU7
+  62              		.loc 1 9 36 is_stmt 0 view .LVU8
+  63 0024 0123     		movs	r3, #1
+  64 0026 0A93     		str	r3, [sp, #40]
+  10:Framework/Src/app_framework_clock.c ****   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  65              		.loc 1 10 3 is_stmt 1 view .LVU9
+  66              		.loc 1 10 30 is_stmt 0 view .LVU10
+  67 0028 4FF48033 		mov	r3, #65536
+  68 002c 0B93     		str	r3, [sp, #44]
+  11:Framework/Src/app_framework_clock.c ****   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  69              		.loc 1 11 3 is_stmt 1 view .LVU11
+  12:Framework/Src/app_framework_clock.c ****   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  70              		.loc 1 12 3 view .LVU12
+  71              		.loc 1 12 7 is_stmt 0 view .LVU13
+  72 002e 2046     		mov	r0, r4
+  73 0030 FFF7FEFF 		bl	HAL_RCC_OscConfig
+  74              	.LVL1:
+  75              		.loc 1 12 6 discriminator 1 view .LVU14
+  76 0034 10B1     		cbz	r0, .L6
+  13:Framework/Src/app_framework_clock.c ****   {
+  14:Framework/Src/app_framework_clock.c ****     return HAL_ERROR;
+  77              		.loc 1 14 12 view .LVU15
+  78 0036 0120     		movs	r0, #1
+  79              	.L2:
+  15:Framework/Src/app_framework_clock.c ****   }
+  16:Framework/Src/app_framework_clock.c **** 
+  17:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK |
+  18:Framework/Src/app_framework_clock.c ****                                 RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  19:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSE;
+  20:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  21:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  22:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+  23:Framework/Src/app_framework_clock.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  24:Framework/Src/app_framework_clock.c ****   {
+  25:Framework/Src/app_framework_clock.c ****     return HAL_ERROR;
+  26:Framework/Src/app_framework_clock.c ****   }
+  27:Framework/Src/app_framework_clock.c **** 
+  28:Framework/Src/app_framework_clock.c ****   PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+  29:Framework/Src/app_framework_clock.c ****   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+  30:Framework/Src/app_framework_clock.c ****   return HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+  31:Framework/Src/app_framework_clock.c **** }
+  80              		.loc 1 31 1 view .LVU16
+  81 0038 14B0     		add	sp, sp, #80
+  82              	.LCFI2:
+  83              		.cfi_remember_state
+  84              		.cfi_def_cfa_offset 8
+ARM GAS  C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s 			page 3
+
+
+  85              		@ sp needed
+  86 003a 10BD     		pop	{r4, pc}
+  87              	.L6:
+  88              	.LCFI3:
+  89              		.cfi_restore_state
+  17:Framework/Src/app_framework_clock.c ****                                 RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  90              		.loc 1 17 3 is_stmt 1 view .LVU17
+  17:Framework/Src/app_framework_clock.c ****                                 RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  91              		.loc 1 17 31 is_stmt 0 view .LVU18
+  92 003c 0F23     		movs	r3, #15
+  93 003e 0593     		str	r3, [sp, #20]
+  19:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  94              		.loc 1 19 3 is_stmt 1 view .LVU19
+  19:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  95              		.loc 1 19 34 is_stmt 0 view .LVU20
+  96 0040 0123     		movs	r3, #1
+  97 0042 0693     		str	r3, [sp, #24]
+  20:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  98              		.loc 1 20 3 is_stmt 1 view .LVU21
+  20:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  99              		.loc 1 20 35 is_stmt 0 view .LVU22
+ 100 0044 0021     		movs	r1, #0
+ 101 0046 0791     		str	r1, [sp, #28]
+  21:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 102              		.loc 1 21 3 is_stmt 1 view .LVU23
+  21:Framework/Src/app_framework_clock.c ****   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+ 103              		.loc 1 21 36 is_stmt 0 view .LVU24
+ 104 0048 0891     		str	r1, [sp, #32]
+  22:Framework/Src/app_framework_clock.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+ 105              		.loc 1 22 3 is_stmt 1 view .LVU25
+  22:Framework/Src/app_framework_clock.c ****   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+ 106              		.loc 1 22 36 is_stmt 0 view .LVU26
+ 107 004a 0991     		str	r1, [sp, #36]
+  23:Framework/Src/app_framework_clock.c ****   {
+ 108              		.loc 1 23 3 is_stmt 1 view .LVU27
+  23:Framework/Src/app_framework_clock.c ****   {
+ 109              		.loc 1 23 7 is_stmt 0 view .LVU28
+ 110 004c 05A8     		add	r0, sp, #20
+ 111 004e FFF7FEFF 		bl	HAL_RCC_ClockConfig
+ 112              	.LVL2:
+  23:Framework/Src/app_framework_clock.c ****   {
+ 113              		.loc 1 23 6 discriminator 1 view .LVU29
+ 114 0052 08B1     		cbz	r0, .L7
+  25:Framework/Src/app_framework_clock.c ****   }
+ 115              		.loc 1 25 12 view .LVU30
+ 116 0054 0120     		movs	r0, #1
+ 117 0056 EFE7     		b	.L2
+ 118              	.L7:
+  28:Framework/Src/app_framework_clock.c ****   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+ 119              		.loc 1 28 3 is_stmt 1 view .LVU31
+  28:Framework/Src/app_framework_clock.c ****   PeriphClkInit.AdcClockSelection = RCC_ADCPCLK2_DIV2;
+ 120              		.loc 1 28 38 is_stmt 0 view .LVU32
+ 121 0058 0223     		movs	r3, #2
+ 122 005a 0193     		str	r3, [sp, #4]
+  29:Framework/Src/app_framework_clock.c ****   return HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+ 123              		.loc 1 29 3 is_stmt 1 view .LVU33
+  29:Framework/Src/app_framework_clock.c ****   return HAL_RCCEx_PeriphCLKConfig(&PeriphClkInit);
+ARM GAS  C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s 			page 4
+
+
+ 124              		.loc 1 29 35 is_stmt 0 view .LVU34
+ 125 005c 0023     		movs	r3, #0
+ 126 005e 0393     		str	r3, [sp, #12]
+  30:Framework/Src/app_framework_clock.c **** }
+ 127              		.loc 1 30 3 is_stmt 1 view .LVU35
+  30:Framework/Src/app_framework_clock.c **** }
+ 128              		.loc 1 30 10 is_stmt 0 view .LVU36
+ 129 0060 01A8     		add	r0, sp, #4
+ 130 0062 FFF7FEFF 		bl	HAL_RCCEx_PeriphCLKConfig
+ 131              	.LVL3:
+ 132 0066 E7E7     		b	.L2
+ 133              		.cfi_endproc
+ 134              	.LFE65:
+ 136              		.text
+ 137              	.Letext0:
+ 138              		.file 2 "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/arm-none-eabi/include/ma
+ 139              		.file 3 "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/arm-none-eabi/include/sy
+ 140              		.file 4 "../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h"
+ 141              		.file 5 "../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h"
+ 142              		.file 6 "../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h"
+ 143              		.file 7 "<built-in>"
+ARM GAS  C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s 			page 5
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 app_framework_clock.c
+C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s:19     .text.AppFrameworkClock_ConfigHsePll6AdcDiv6:00000000 $t
+C:\Users\PC\AppData\Local\Temp\cceCLG1Z.s:25     .text.AppFrameworkClock_ConfigHsePll6AdcDiv6:00000000 AppFrameworkClock_ConfigHsePll6AdcDiv6
+
+UNDEFINED SYMBOLS
+memset
+HAL_RCC_OscConfig
+HAL_RCC_ClockConfig
+HAL_RCCEx_PeriphCLKConfig
