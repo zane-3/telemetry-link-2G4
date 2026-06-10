@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include "app_config.h"
+#include "app_crsf.h"
 #include "app_framework_led.h"
 
 #include <string.h>
@@ -49,6 +50,11 @@ typedef struct
   app_frame_parser_t radio_frame_parser;
   app_pending_ack_t pending_ack;
   app_radio_runtime_config_t radio_config;
+  uint32_t last_rc_ms;
+  uint32_t last_rc_failsafe_output_ms;
+#if APP_CRSF_TEST_MODE_ENABLE
+  uint32_t last_crsf_test_output_ms;
+#endif
 #if APP_HOST_CFG_COMMAND_ENABLE
   uint8_t host_cfg_command[APP_HOST_CFG_COMMAND_BUFFER];
   uint16_t host_cfg_command_length;
@@ -142,6 +148,11 @@ static uint8_t App_FrameChecksum(const uint8_t *bytes, uint16_t length);
 static void App_SendAck(uint8_t request_seq, uint8_t request_cmd);
 static void App_RecordPendingAck(uint8_t target, uint8_t seq, uint8_t cmd);
 static void App_CheckPendingAckTimeout(void);
+static void App_CheckRcFailsafe(void);
+static void App_ParseRcChannels(const uint8_t *payload, uint16_t payload_len, uint16_t channels[APP_CRSF_CHANNEL_COUNT]);
+#if APP_CRSF_TEST_MODE_ENABLE
+static void App_CrsfTestOutput(void);
+#endif
 
 void App_Init(const app_hw_t *hw)
 {
@@ -181,6 +192,11 @@ void App_Run(void)
   App_PumpHostToRadio();
   App_PumpRadioToHost();
   App_CheckPendingAckTimeout();
+#if APP_CRSF_TEST_MODE_ENABLE
+  App_CrsfTestOutput();
+#else
+  App_CheckRcFailsafe();
+#endif
 #if APP_HOST_CFG_COMMAND_ENABLE
   App_CheckCfgModeTimeout();
 #endif
@@ -253,7 +269,7 @@ static bool App_ConfigureRadioOnFirstBoot(void)
     {
       App_WriteHostString("E28 CONFIG FAILED: BAUDRATE NOT FOUND\r\n");
     }
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
+    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_UART_BAUDRATE);
     App_ConfigureRadioTransparentMode();
     return false;
   }
@@ -279,7 +295,7 @@ static bool App_ConfigureRadioOnFirstBoot(void)
       App_WriteHostString("E28 CONFIG FAILED: VERIFY FAILED\r\n");
     }
   }
-  (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
+  (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_UART_BAUDRATE);
   App_ConfigureRadioTransparentMode();
   return configured;
 #else
@@ -1346,6 +1362,9 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
   uint8_t seq;
   uint8_t cmd;
   bool is_ack;
+  const uint8_t *payload;
+  uint16_t payload_len;
+  uint16_t channels[APP_CRSF_CHANNEL_COUNT];
 
   if (!App_FrameIsValid(frame, length))
   {
@@ -1370,6 +1389,28 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
     }
 
     ++g_app_diag_frame_rx_count;
+
+    // Handle RC_CHANNELS command
+    if (cmd == APP_FRAME_CMD_RC_CHANNELS)
+    {
+      payload = &frame[6];
+      payload_len = (uint16_t)(length - 7U);
+      App_ParseRcChannels(payload, payload_len, channels);
+      AppCrsf_SendRcChannels(g_app.hw.host_uart1, channels);
+      g_app.last_rc_ms = HAL_GetTick();
+
+      // Send ACK if required
+      if (App_RadioRoleIsSlave() &&
+          App_RadioAckIsEnabled() &&
+          (target == App_RadioLocalFrameId()) &&
+          !is_ack)
+      {
+        App_SendAck(seq, cmd);
+      }
+      return;
+    }
+
+    // Non-RC frames: forward to host
     App_WriteBytes(g_app.hw.host_uart1, frame, length);
 
     if (App_RadioRoleIsSlave() &&
@@ -1561,3 +1602,85 @@ static void App_WriteBytes(UART_HandleTypeDef *target, const uint8_t *bytes, uin
     App_WriteUart(target, bytes[index]);
   }
 }
+
+static void App_ParseRcChannels(const uint8_t *payload, uint16_t payload_len, uint16_t channels[APP_CRSF_CHANNEL_COUNT])
+{
+  uint16_t i;
+
+  if (payload == NULL || channels == NULL)
+  {
+    return;
+  }
+
+  // Payload should be 16 * 2 = 32 bytes (16 channels as uint16_t little-endian)
+  if (payload_len < (APP_CRSF_CHANNEL_COUNT * 2U))
+  {
+    // Not enough data, fill with mid values
+    for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+    {
+      channels[i] = APP_CRSF_CHANNEL_MID;
+    }
+    return;
+  }
+
+  // Parse little-endian uint16_t channels
+  for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+  {
+    channels[i] = (uint16_t)(payload[i * 2U] | (payload[i * 2U + 1U] << 8));
+  }
+}
+
+static void App_CheckRcFailsafe(void)
+{
+  const uint32_t now = HAL_GetTick();
+
+  // Only check failsafe if we're a slave (receiver)
+  if (!App_RadioRoleIsSlave())
+  {
+    return;
+  }
+
+  // If no RC received yet, don't output failsafe
+  if (g_app.last_rc_ms == 0U)
+  {
+    return;
+  }
+
+  // Check if RC timed out
+  if ((now - g_app.last_rc_ms) >= APP_RC_FAILSAFE_TIMEOUT_MS)
+  {
+    // Output failsafe periodically
+    if ((now - g_app.last_rc_failsafe_output_ms) >= APP_RC_FAILSAFE_OUTPUT_PERIOD_MS)
+    {
+      AppCrsf_SendFailsafe(g_app.hw.host_uart1);
+      g_app.last_rc_failsafe_output_ms = now;
+    }
+  }
+}
+
+#if APP_CRSF_TEST_MODE_ENABLE
+static void App_CrsfTestOutput(void)
+{
+  const uint32_t now = HAL_GetTick();
+  uint16_t test_channels[APP_CRSF_CHANNEL_COUNT];
+  uint8_t i;
+
+  // Output CRSF test data periodically
+  if ((now - g_app.last_crsf_test_output_ms) >= APP_CRSF_TEST_OUTPUT_PERIOD_MS)
+  {
+    // Generate test channel data (all mid values for safety)
+    for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+    {
+      test_channels[i] = APP_CRSF_CHANNEL_MID;
+    }
+
+    // CH3 (Throttle) = minimum for safety
+    test_channels[2] = APP_CRSF_CHANNEL_MIN;
+    // CH5 (Arm) = disarmed
+    test_channels[4] = APP_CRSF_CHANNEL_MIN;
+
+    AppCrsf_SendRcChannels(g_app.hw.host_uart1, test_channels);
+    g_app.last_crsf_test_output_ms = now;
+  }
+}
+#endif
