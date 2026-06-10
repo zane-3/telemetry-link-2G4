@@ -1664,19 +1664,36 @@ static void App_CrsfTestOutput(void)
   const uint32_t now = HAL_GetTick();
   uint16_t test_channels[APP_CRSF_CHANNEL_COUNT];
   uint8_t i;
+  static uint16_t sweep_value = APP_CRSF_CHANNEL_MIN;
+  static int8_t sweep_direction = 1;
 
   // Output CRSF test data periodically
   if ((now - g_app.last_crsf_test_output_ms) >= APP_CRSF_TEST_OUTPUT_PERIOD_MS)
   {
-    // Generate test channel data (all mid values for safety)
-    for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+    // Update sweep value (10 per update, 100Hz = 1000 units per second)
+    sweep_value += sweep_direction * 10;
+
+    // Reverse direction at limits
+    if (sweep_value >= APP_CRSF_CHANNEL_MAX)
     {
-      test_channels[i] = APP_CRSF_CHANNEL_MID;
+      sweep_value = APP_CRSF_CHANNEL_MAX;
+      sweep_direction = -1;
+    }
+    else if (sweep_value <= APP_CRSF_CHANNEL_MIN)
+    {
+      sweep_value = APP_CRSF_CHANNEL_MIN;
+      sweep_direction = 1;
     }
 
-    // CH3 (Throttle) = minimum for safety
+    // Generate test channel data with sweeping values
+    for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+    {
+      test_channels[i] = sweep_value;
+    }
+
+    // CH3 (Throttle) always at minimum for safety
     test_channels[2] = APP_CRSF_CHANNEL_MIN;
-    // CH5 (Arm) = disarmed
+    // CH5 (Arm) always disarmed for safety
     test_channels[4] = APP_CRSF_CHANNEL_MIN;
 
     AppCrsf_SendRcChannels(g_app.hw.host_uart1, test_channels);
