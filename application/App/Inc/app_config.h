@@ -13,7 +13,7 @@
 #define APP_RADIO_E28_OPTION           0x04U
 #define APP_UART_POLL_TIMEOUT_MS       10U
 #define APP_UART_SELF_TEST_ECHO        0U
-#define APP_UART_STARTUP_BANNER        1U
+#define APP_UART_STARTUP_BANNER        0U
 #define APP_UART_SOURCE_TAG_ENABLE     0U
 #define APP_UART2_SOURCE_TAG           "[DT]"
 #define APP_UART3_SOURCE_TAG           "[RTK]"
