@@ -1,0 +1,315 @@
+ARM GAS  C:\Users\PC\AppData\Local\Temp\ccplwriU.s 			page 1
+
+
+   1              		.cpu cortex-m3
+   2              		.arch armv7-m
+   3              		.fpu softvfp
+   4              		.eabi_attribute 20, 1
+   5              		.eabi_attribute 21, 1
+   6              		.eabi_attribute 23, 3
+   7              		.eabi_attribute 24, 1
+   8              		.eabi_attribute 25, 1
+   9              		.eabi_attribute 26, 1
+  10              		.eabi_attribute 30, 1
+  11              		.eabi_attribute 34, 1
+  12              		.eabi_attribute 18, 4
+  13              		.file	"app_framework_led.c"
+  14              		.text
+  15              	.Ltext0:
+  16              		.cfi_sections	.debug_frame
+  17              		.file 1 "Framework/Src/app_framework_led.c"
+  18              		.section	.text.AppFrameworkLed_On,"ax",%progbits
+  19              		.align	1
+  20              		.global	AppFrameworkLed_On
+  21              		.syntax unified
+  22              		.thumb
+  23              		.thumb_func
+  25              	AppFrameworkLed_On:
+  26              	.LVL0:
+  27              	.LFB66:
+   1:Framework/Src/app_framework_led.c **** #include "app_framework_led.h"
+   2:Framework/Src/app_framework_led.c **** 
+   3:Framework/Src/app_framework_led.c **** void AppFrameworkLed_Init(app_framework_led_t *led,
+   4:Framework/Src/app_framework_led.c ****                           GPIO_TypeDef *port,
+   5:Framework/Src/app_framework_led.c ****                           uint16_t pin,
+   6:Framework/Src/app_framework_led.c ****                           GPIO_PinState active_level,
+   7:Framework/Src/app_framework_led.c ****                           GPIO_PinState inactive_level,
+   8:Framework/Src/app_framework_led.c ****                           uint32_t now)
+   9:Framework/Src/app_framework_led.c **** {
+  10:Framework/Src/app_framework_led.c ****   led->port = port;
+  11:Framework/Src/app_framework_led.c ****   led->pin = pin;
+  12:Framework/Src/app_framework_led.c ****   led->active_level = active_level;
+  13:Framework/Src/app_framework_led.c ****   led->inactive_level = inactive_level;
+  14:Framework/Src/app_framework_led.c ****   led->last_toggle_ms = now;
+  15:Framework/Src/app_framework_led.c ****   led->on = false;
+  16:Framework/Src/app_framework_led.c ****   AppFrameworkLed_Off(led);
+  17:Framework/Src/app_framework_led.c **** }
+  18:Framework/Src/app_framework_led.c **** 
+  19:Framework/Src/app_framework_led.c **** void AppFrameworkLed_On(app_framework_led_t *led)
+  20:Framework/Src/app_framework_led.c **** {
+  28              		.loc 1 20 1 view -0
+  29              		.cfi_startproc
+  30              		@ args = 0, pretend = 0, frame = 0
+  31              		@ frame_needed = 0, uses_anonymous_args = 0
+  32              		.loc 1 20 1 is_stmt 0 view .LVU1
+  33 0000 08B5     		push	{r3, lr}
+  34              	.LCFI0:
+  35              		.cfi_def_cfa_offset 8
+  36              		.cfi_offset 3, -8
+  37              		.cfi_offset 14, -4
+  21:Framework/Src/app_framework_led.c ****   led->on = true;
+ARM GAS  C:\Users\PC\AppData\Local\Temp\ccplwriU.s 			page 2
+
+
+  38              		.loc 1 21 3 is_stmt 1 view .LVU2
+  39              		.loc 1 21 11 is_stmt 0 view .LVU3
+  40 0002 0123     		movs	r3, #1
+  41 0004 0373     		strb	r3, [r0, #12]
+  22:Framework/Src/app_framework_led.c ****   HAL_GPIO_WritePin(led->port, led->pin, led->active_level);
+  42              		.loc 1 22 3 is_stmt 1 view .LVU4
+  43 0006 8279     		ldrb	r2, [r0, #6]	@ zero_extendqisi2
+  44 0008 8188     		ldrh	r1, [r0, #4]
+  45 000a 0068     		ldr	r0, [r0]
+  46              	.LVL1:
+  47              		.loc 1 22 3 is_stmt 0 view .LVU5
+  48 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+  49              	.LVL2:
+  23:Framework/Src/app_framework_led.c **** }
+  50              		.loc 1 23 1 view .LVU6
+  51 0010 08BD     		pop	{r3, pc}
+  52              		.cfi_endproc
+  53              	.LFE66:
+  55              		.section	.text.AppFrameworkLed_Off,"ax",%progbits
+  56              		.align	1
+  57              		.global	AppFrameworkLed_Off
+  58              		.syntax unified
+  59              		.thumb
+  60              		.thumb_func
+  62              	AppFrameworkLed_Off:
+  63              	.LVL3:
+  64              	.LFB67:
+  24:Framework/Src/app_framework_led.c **** 
+  25:Framework/Src/app_framework_led.c **** void AppFrameworkLed_Off(app_framework_led_t *led)
+  26:Framework/Src/app_framework_led.c **** {
+  65              		.loc 1 26 1 is_stmt 1 view -0
+  66              		.cfi_startproc
+  67              		@ args = 0, pretend = 0, frame = 0
+  68              		@ frame_needed = 0, uses_anonymous_args = 0
+  69              		.loc 1 26 1 is_stmt 0 view .LVU8
+  70 0000 08B5     		push	{r3, lr}
+  71              	.LCFI1:
+  72              		.cfi_def_cfa_offset 8
+  73              		.cfi_offset 3, -8
+  74              		.cfi_offset 14, -4
+  27:Framework/Src/app_framework_led.c ****   led->on = false;
+  75              		.loc 1 27 3 is_stmt 1 view .LVU9
+  76              		.loc 1 27 11 is_stmt 0 view .LVU10
+  77 0002 0023     		movs	r3, #0
+  78 0004 0373     		strb	r3, [r0, #12]
+  28:Framework/Src/app_framework_led.c ****   HAL_GPIO_WritePin(led->port, led->pin, led->inactive_level);
+  79              		.loc 1 28 3 is_stmt 1 view .LVU11
+  80 0006 C279     		ldrb	r2, [r0, #7]	@ zero_extendqisi2
+  81 0008 8188     		ldrh	r1, [r0, #4]
+  82 000a 0068     		ldr	r0, [r0]
+  83              	.LVL4:
+  84              		.loc 1 28 3 is_stmt 0 view .LVU12
+  85 000c FFF7FEFF 		bl	HAL_GPIO_WritePin
+  86              	.LVL5:
+  29:Framework/Src/app_framework_led.c **** }
+  87              		.loc 1 29 1 view .LVU13
+  88 0010 08BD     		pop	{r3, pc}
+ARM GAS  C:\Users\PC\AppData\Local\Temp\ccplwriU.s 			page 3
+
+
+  89              		.cfi_endproc
+  90              	.LFE67:
+  92              		.section	.text.AppFrameworkLed_Init,"ax",%progbits
+  93              		.align	1
+  94              		.global	AppFrameworkLed_Init
+  95              		.syntax unified
+  96              		.thumb
+  97              		.thumb_func
+  99              	AppFrameworkLed_Init:
+ 100              	.LVL6:
+ 101              	.LFB65:
+   9:Framework/Src/app_framework_led.c ****   led->port = port;
+ 102              		.loc 1 9 1 is_stmt 1 view -0
+ 103              		.cfi_startproc
+ 104              		@ args = 8, pretend = 0, frame = 0
+ 105              		@ frame_needed = 0, uses_anonymous_args = 0
+   9:Framework/Src/app_framework_led.c ****   led->port = port;
+ 106              		.loc 1 9 1 is_stmt 0 view .LVU15
+ 107 0000 08B5     		push	{r3, lr}
+ 108              	.LCFI2:
+ 109              		.cfi_def_cfa_offset 8
+ 110              		.cfi_offset 3, -8
+ 111              		.cfi_offset 14, -4
+  10:Framework/Src/app_framework_led.c ****   led->pin = pin;
+ 112              		.loc 1 10 3 is_stmt 1 view .LVU16
+  10:Framework/Src/app_framework_led.c ****   led->pin = pin;
+ 113              		.loc 1 10 13 is_stmt 0 view .LVU17
+ 114 0002 0160     		str	r1, [r0]
+  11:Framework/Src/app_framework_led.c ****   led->active_level = active_level;
+ 115              		.loc 1 11 3 is_stmt 1 view .LVU18
+  11:Framework/Src/app_framework_led.c ****   led->active_level = active_level;
+ 116              		.loc 1 11 12 is_stmt 0 view .LVU19
+ 117 0004 8280     		strh	r2, [r0, #4]	@ movhi
+  12:Framework/Src/app_framework_led.c ****   led->inactive_level = inactive_level;
+ 118              		.loc 1 12 3 is_stmt 1 view .LVU20
+  12:Framework/Src/app_framework_led.c ****   led->inactive_level = inactive_level;
+ 119              		.loc 1 12 21 is_stmt 0 view .LVU21
+ 120 0006 8371     		strb	r3, [r0, #6]
+  13:Framework/Src/app_framework_led.c ****   led->last_toggle_ms = now;
+ 121              		.loc 1 13 3 is_stmt 1 view .LVU22
+  13:Framework/Src/app_framework_led.c ****   led->last_toggle_ms = now;
+ 122              		.loc 1 13 23 is_stmt 0 view .LVU23
+ 123 0008 9DF80830 		ldrb	r3, [sp, #8]	@ zero_extendqisi2
+ 124              	.LVL7:
+  13:Framework/Src/app_framework_led.c ****   led->last_toggle_ms = now;
+ 125              		.loc 1 13 23 view .LVU24
+ 126 000c C371     		strb	r3, [r0, #7]
+  14:Framework/Src/app_framework_led.c ****   led->on = false;
+ 127              		.loc 1 14 3 is_stmt 1 view .LVU25
+  14:Framework/Src/app_framework_led.c ****   led->on = false;
+ 128              		.loc 1 14 23 is_stmt 0 view .LVU26
+ 129 000e 039B     		ldr	r3, [sp, #12]
+ 130 0010 8360     		str	r3, [r0, #8]
+  15:Framework/Src/app_framework_led.c ****   AppFrameworkLed_Off(led);
+ 131              		.loc 1 15 3 is_stmt 1 view .LVU27
+  15:Framework/Src/app_framework_led.c ****   AppFrameworkLed_Off(led);
+ 132              		.loc 1 15 11 is_stmt 0 view .LVU28
+ARM GAS  C:\Users\PC\AppData\Local\Temp\ccplwriU.s 			page 4
+
+
+ 133 0012 0023     		movs	r3, #0
+ 134 0014 0373     		strb	r3, [r0, #12]
+  16:Framework/Src/app_framework_led.c **** }
+ 135              		.loc 1 16 3 is_stmt 1 view .LVU29
+ 136 0016 FFF7FEFF 		bl	AppFrameworkLed_Off
+ 137              	.LVL8:
+  17:Framework/Src/app_framework_led.c **** 
+ 138              		.loc 1 17 1 is_stmt 0 view .LVU30
+ 139 001a 08BD     		pop	{r3, pc}
+  17:Framework/Src/app_framework_led.c **** 
+ 140              		.loc 1 17 1 view .LVU31
+ 141              		.cfi_endproc
+ 142              	.LFE65:
+ 144              		.section	.text.AppFrameworkLed_Update,"ax",%progbits
+ 145              		.align	1
+ 146              		.global	AppFrameworkLed_Update
+ 147              		.syntax unified
+ 148              		.thumb
+ 149              		.thumb_func
+ 151              	AppFrameworkLed_Update:
+ 152              	.LVL9:
+ 153              	.LFB68:
+  30:Framework/Src/app_framework_led.c **** 
+  31:Framework/Src/app_framework_led.c **** void AppFrameworkLed_Update(app_framework_led_t *led,
+  32:Framework/Src/app_framework_led.c ****                             bool enabled,
+  33:Framework/Src/app_framework_led.c ****                             uint32_t toggle_ms,
+  34:Framework/Src/app_framework_led.c ****                             uint32_t now)
+  35:Framework/Src/app_framework_led.c **** {
+ 154              		.loc 1 35 1 is_stmt 1 view -0
+ 155              		.cfi_startproc
+ 156              		@ args = 0, pretend = 0, frame = 0
+ 157              		@ frame_needed = 0, uses_anonymous_args = 0
+ 158              		.loc 1 35 1 is_stmt 0 view .LVU33
+ 159 0000 08B5     		push	{r3, lr}
+ 160              	.LCFI3:
+ 161              		.cfi_def_cfa_offset 8
+ 162              		.cfi_offset 3, -8
+ 163              		.cfi_offset 14, -4
+  36:Framework/Src/app_framework_led.c ****   if (!enabled)
+ 164              		.loc 1 36 3 is_stmt 1 view .LVU34
+ 165              		.loc 1 36 6 is_stmt 0 view .LVU35
+ 166 0002 49B1     		cbz	r1, .L12
+  37:Framework/Src/app_framework_led.c ****   {
+  38:Framework/Src/app_framework_led.c ****     AppFrameworkLed_Off(led);
+  39:Framework/Src/app_framework_led.c ****     return;
+  40:Framework/Src/app_framework_led.c ****   }
+  41:Framework/Src/app_framework_led.c **** 
+  42:Framework/Src/app_framework_led.c ****   if ((now - led->last_toggle_ms) < toggle_ms)
+ 167              		.loc 1 42 3 is_stmt 1 view .LVU36
+ 168              		.loc 1 42 17 is_stmt 0 view .LVU37
+ 169 0004 8168     		ldr	r1, [r0, #8]
+ 170              	.LVL10:
+ 171              		.loc 1 42 12 view .LVU38
+ 172 0006 591A     		subs	r1, r3, r1
+ 173              		.loc 1 42 6 view .LVU39
+ 174 0008 9142     		cmp	r1, r2
+ 175 000a 04D3     		bcc	.L7
+ARM GAS  C:\Users\PC\AppData\Local\Temp\ccplwriU.s 			page 5
+
+
+  43:Framework/Src/app_framework_led.c ****   {
+  44:Framework/Src/app_framework_led.c ****     return;
+  45:Framework/Src/app_framework_led.c ****   }
+  46:Framework/Src/app_framework_led.c **** 
+  47:Framework/Src/app_framework_led.c ****   led->last_toggle_ms = now;
+ 176              		.loc 1 47 3 is_stmt 1 view .LVU40
+ 177              		.loc 1 47 23 is_stmt 0 view .LVU41
+ 178 000c 8360     		str	r3, [r0, #8]
+  48:Framework/Src/app_framework_led.c ****   if (led->on)
+ 179              		.loc 1 48 3 is_stmt 1 view .LVU42
+ 180              		.loc 1 48 10 is_stmt 0 view .LVU43
+ 181 000e 037B     		ldrb	r3, [r0, #12]	@ zero_extendqisi2
+ 182              	.LVL11:
+ 183              		.loc 1 48 6 view .LVU44
+ 184 0010 2BB1     		cbz	r3, .L10
+  49:Framework/Src/app_framework_led.c ****   {
+  50:Framework/Src/app_framework_led.c ****     AppFrameworkLed_Off(led);
+ 185              		.loc 1 50 5 is_stmt 1 view .LVU45
+ 186 0012 FFF7FEFF 		bl	AppFrameworkLed_Off
+ 187              	.LVL12:
+ 188              	.L7:
+  51:Framework/Src/app_framework_led.c ****   }
+  52:Framework/Src/app_framework_led.c ****   else
+  53:Framework/Src/app_framework_led.c ****   {
+  54:Framework/Src/app_framework_led.c ****     AppFrameworkLed_On(led);
+  55:Framework/Src/app_framework_led.c ****   }
+  56:Framework/Src/app_framework_led.c **** }
+ 189              		.loc 1 56 1 is_stmt 0 view .LVU46
+ 190 0016 08BD     		pop	{r3, pc}
+ 191              	.LVL13:
+ 192              	.L12:
+  38:Framework/Src/app_framework_led.c ****     return;
+ 193              		.loc 1 38 5 is_stmt 1 view .LVU47
+ 194 0018 FFF7FEFF 		bl	AppFrameworkLed_Off
+ 195              	.LVL14:
+  39:Framework/Src/app_framework_led.c ****   }
+ 196              		.loc 1 39 5 view .LVU48
+ 197 001c FBE7     		b	.L7
+ 198              	.LVL15:
+ 199              	.L10:
+  54:Framework/Src/app_framework_led.c ****   }
+ 200              		.loc 1 54 5 view .LVU49
+ 201 001e FFF7FEFF 		bl	AppFrameworkLed_On
+ 202              	.LVL16:
+  54:Framework/Src/app_framework_led.c ****   }
+ 203              		.loc 1 54 5 is_stmt 0 view .LVU50
+ 204 0022 F8E7     		b	.L7
+ 205              		.cfi_endproc
+ 206              	.LFE68:
+ 208              		.text
+ 209              	.Letext0:
+ 210              		.file 2 "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/arm-none-eabi/include/ma
+ 211              		.file 3 "C:/Program Files (x86)/Arm GNU Toolchain arm-none-eabi/14.2 rel1/arm-none-eabi/include/sy
+ 212              		.file 4 "../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xb.h"
+ 213              		.file 5 "../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h"
+ 214              		.file 6 "Framework/Inc/app_framework_led.h"
+ARM GAS  C:\Users\PC\AppData\Local\Temp\ccplwriU.s 			page 6
+
+
+DEFINED SYMBOLS
+                            *ABS*:00000000 app_framework_led.c
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:19     .text.AppFrameworkLed_On:00000000 $t
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:25     .text.AppFrameworkLed_On:00000000 AppFrameworkLed_On
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:56     .text.AppFrameworkLed_Off:00000000 $t
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:62     .text.AppFrameworkLed_Off:00000000 AppFrameworkLed_Off
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:93     .text.AppFrameworkLed_Init:00000000 $t
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:99     .text.AppFrameworkLed_Init:00000000 AppFrameworkLed_Init
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:145    .text.AppFrameworkLed_Update:00000000 $t
+C:\Users\PC\AppData\Local\Temp\ccplwriU.s:151    .text.AppFrameworkLed_Update:00000000 AppFrameworkLed_Update
+
+UNDEFINED SYMBOLS
+HAL_GPIO_WritePin

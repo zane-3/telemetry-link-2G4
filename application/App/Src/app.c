@@ -50,8 +50,11 @@ typedef struct
   app_frame_parser_t radio_frame_parser;
   app_pending_ack_t pending_ack;
   app_radio_runtime_config_t radio_config;
+  uint16_t latest_rc_channels[APP_CRSF_CHANNEL_COUNT];
   uint32_t last_rc_ms;
+  uint32_t last_rc_output_ms;
   uint32_t last_rc_failsafe_output_ms;
+  bool latest_rc_valid;
 #if APP_CRSF_TEST_MODE_ENABLE
   uint32_t last_crsf_test_output_ms;
 #endif
@@ -148,7 +151,7 @@ static uint8_t App_FrameChecksum(const uint8_t *bytes, uint16_t length);
 static void App_SendAck(uint8_t request_seq, uint8_t request_cmd);
 static void App_RecordPendingAck(uint8_t target, uint8_t seq, uint8_t cmd);
 static void App_CheckPendingAckTimeout(void);
-static void App_CheckRcFailsafe(void);
+static void App_UpdateCrsfOutput(void);
 static void App_ParseRcChannels(const uint8_t *payload, uint16_t payload_len, uint16_t channels[APP_CRSF_CHANNEL_COUNT]);
 #if APP_CRSF_TEST_MODE_ENABLE
 static void App_CrsfTestOutput(void);
@@ -195,7 +198,7 @@ void App_Run(void)
 #if APP_CRSF_TEST_MODE_ENABLE
   App_CrsfTestOutput();
 #else
-  App_CheckRcFailsafe();
+  App_UpdateCrsfOutput();
 #endif
 #if APP_HOST_CFG_COMMAND_ENABLE
   App_CheckCfgModeTimeout();
@@ -1375,6 +1378,15 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
     return;
   }
 
+  if (from_radio &&
+      (length > 3U) &&
+      (frame[2] == APP_FRAME_HEAD) &&
+      App_FrameIsValid(&frame[2], frame[1]))
+  {
+    App_ProcessFrame(&frame[2], frame[1], true);
+    return;
+  }
+
   target = frame[2];
   seq = frame[4];
   cmd = frame[5];
@@ -1396,17 +1408,10 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
       payload = &frame[6];
       payload_len = (uint16_t)(length - 7U);
       App_ParseRcChannels(payload, payload_len, channels);
-      AppCrsf_SendRcChannels(g_app.hw.host_uart1, channels);
+      memcpy(g_app.latest_rc_channels, channels, sizeof(g_app.latest_rc_channels));
+      g_app.latest_rc_valid = true;
       g_app.last_rc_ms = HAL_GetTick();
 
-      // Send ACK if required
-      if (App_RadioRoleIsSlave() &&
-          App_RadioAckIsEnabled() &&
-          (target == App_RadioLocalFrameId()) &&
-          !is_ack)
-      {
-        App_SendAck(seq, cmd);
-      }
       return;
     }
 
@@ -1630,31 +1635,35 @@ static void App_ParseRcChannels(const uint8_t *payload, uint16_t payload_len, ui
   }
 }
 
-static void App_CheckRcFailsafe(void)
+static void App_UpdateCrsfOutput(void)
 {
   const uint32_t now = HAL_GetTick();
 
-  // Only check failsafe if we're a slave (receiver)
   if (!App_RadioRoleIsSlave())
   {
     return;
   }
 
-  // If no RC received yet, don't output failsafe
   if (g_app.last_rc_ms == 0U)
   {
     return;
   }
 
-  // Check if RC timed out
   if ((now - g_app.last_rc_ms) >= APP_RC_FAILSAFE_TIMEOUT_MS)
   {
-    // Output failsafe periodically
     if ((now - g_app.last_rc_failsafe_output_ms) >= APP_RC_FAILSAFE_OUTPUT_PERIOD_MS)
     {
       AppCrsf_SendFailsafe(g_app.hw.host_uart1);
       g_app.last_rc_failsafe_output_ms = now;
     }
+    return;
+  }
+
+  if (g_app.latest_rc_valid &&
+      ((now - g_app.last_rc_output_ms) >= APP_CRSF_OUTPUT_PERIOD_MS))
+  {
+    AppCrsf_SendRcChannels(g_app.hw.host_uart1, g_app.latest_rc_channels);
+    g_app.last_rc_output_ms = now;
   }
 }
 
