@@ -556,7 +556,7 @@ echo Done!
 
 **技术支持：**
 - 项目仓库：`zane-3/telemetry-link-2G4`
-- 文档位置：`docs/tasks/e28-one-to-many.md`
+- 文档入口：`docs/README.md`
 - 测试脚本：`test_one_to_many.py`
 
 ---
