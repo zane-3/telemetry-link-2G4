@@ -224,6 +224,7 @@ Serial Receiver Provider = CRSF
 
 - E28 Radio UART 仍然可以正常收发 A5 帧。
 - Host UART 可以以 420000 输出 CRSF。
+- CRSF RC 输出周期为 10ms，目标 100Hz。
 - Betaflight 能识别 CRSF 接收机。
 - Receiver 页面能看到 CH1~CH5。
 - 停止无线输入后 300ms 内进入安全通道输出。

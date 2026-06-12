@@ -186,10 +186,10 @@ SECTIONS
 
   .ARM.attributes 0 : { *(.ARM.attributes) }
 
-  .radio_config_marker :
+  .radio_config_marker (NOLOAD) :
   {
     . = ALIGN(4);
-    LONG(0xFFFFFFFF)
+    . = . + 4;
     . = ALIGN(4);
   } >RADIOCFG
 }

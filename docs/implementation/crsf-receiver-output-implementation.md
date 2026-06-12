@@ -154,6 +154,7 @@ AppCrsf_SendFailsafe(g_app.hw.host_uart1);
 ## 验收标准
 - ✅ E28 Radio UART 仍然 115200 正常工作
 - ✅ Host UART 以 420000 输出 CRSF
+- ✅ CRSF RC 输出周期为 10ms，实测约 99.6Hz
 - ✅ 编译通过，固件大小合理
 - ⏳ Betaflight 能识别 CRSF 接收机（需硬件测试）
 - ⏳ Receiver 页面能看到 CH1~CH5（需硬件测试）
@@ -167,12 +168,11 @@ AppCrsf_SendFailsafe(g_app.hw.host_uart1);
 
 ## 风险和注意事项
 1. **波特率误差**: 420000 bps 可能在某些飞控上有误差，需实测验证
-2. **CRSF 帧率**: 当前按需发送，未限制帧率。正常应为 50-150Hz
+2. **CRSF 帧率**: 从站按 `APP_CRSF_OUTPUT_PERIOD_MS = 10U` 限制输出周期，目标 100Hz；实测 COM8 CRSF RC 约 99.6Hz
 3. **通道映射**: 当前假设主站发送的通道顺序为 Roll/Pitch/Throttle/Yaw/Arm/Mode
 4. **Failsafe 触发**: 首次 RC 帧到达前不会输出 failsafe
 
 ## 后续优化建议
-1. 添加 CRSF 帧率控制（建议 100Hz）
-2. 添加诊断计数器（RC 帧接收数、CRSF 发送数、Failsafe 触发数）
-3. 考虑支持 CRSF 双向通信（Link Statistics）
-4. 添加通道映射配置
+1. 添加诊断计数器（RC 帧接收数、CRSF 发送数、Failsafe 触发数）
+2. 考虑支持 CRSF 双向通信（Link Statistics）
+3. 添加通道映射配置

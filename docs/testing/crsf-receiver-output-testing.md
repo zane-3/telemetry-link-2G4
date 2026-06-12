@@ -248,9 +248,9 @@ uint16_t channels[16] = {
 ## 性能指标
 
 ### CRSF 帧率
-- **当前实现**: 按需发送（收到 A5 RC 帧时立即转发）
-- **建议**: 50-150 Hz
-- **优化**: 添加帧率限制，避免过载飞控
+- **当前实现**: 从站按 `APP_CRSF_OUTPUT_PERIOD_MS = 10U` 周期输出
+- **目标**: 100 Hz（每 10ms 一帧 RC_CHANNELS_PACKED）
+- **实测**: COM8 CRSF RC 约 99.6 Hz，CRC 错误 0
 
 ### 延迟
 - A5 接收 → CRSF 输出: < 1ms
@@ -292,7 +292,7 @@ CFG SAVE
 - [ ] 测试 Failsafe 可靠性
 
 ### 优先级 P1 (重要)
-- [ ] 添加 CRSF 帧率控制 (100Hz)
+- [x] 添加 CRSF 帧率控制 (100Hz)
 - [ ] 添加诊断计数器 (RC 接收数、CRSF 发送数、Failsafe 次数)
 - [ ] 主站固件实现 RC_CHANNELS 发送
 
