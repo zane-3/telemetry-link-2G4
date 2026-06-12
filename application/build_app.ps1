@@ -34,6 +34,7 @@ $cflags = @(
 $sources = @(
   'Core/Src/main.c',
   'App/Src/app.c',
+  'App/Src/app_crsf.c',
   'Framework/Src/app_framework_led.c',
   'Framework/Src/app_framework_clock.c',
   'Core/Src/stm32f1xx_it.c',

@@ -1,20 +1,14 @@
 # 文档目录
 
-本目录按项目阶段归类保存需求、任务和硬件资料。
+本目录只保留当前项目需要长期维护的核心文档。
 
-## requirements
+## 核心文档
 
-- `radio_configuration_requirements.md`：E28-2G4T12S HEX 配置、首次启动配置和串口透传需求。
+- `crsf-receiver-output.md`：2.4G 从站输出 CRSF 接收机信号的需求、帧格式、failsafe 和抗跳变要求。
+- `production-config.md`：E28-2G4T12S 一对多模式生产配置、烧录和运行时配置流程。
+- `crsf-troubleshooting.md`：CRSF 接飞控时的接线、Betaflight 配置和故障排查。
 
-## tasks
+## 硬件资料
 
-- `e28-first-boot-config.md`：GitHub PR #1 对应的 E28 首次烧录配置实现任务。
-
-## hardware
-
-- `2.4G 数传 PCB_Project.pdf`：2.4G 数传 PCB 原理图/工程资料。
-- `E28-2G4T12S.pdf`：E28-2G4T12S 模块规格书。
-
-## images
-
-- `配置命令.png`：旧 AT 模块配置命令截图，仅作历史资料参考，不适用于 E28-2G4T12S。
+- `hardware/2.4G 数传 PCB_Project.pdf`：2.4G 数传 PCB 资料。
+- `hardware/E28-2G4T12S.pdf`：E28-2G4T12S 模块规格书。

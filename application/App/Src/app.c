@@ -1,6 +1,7 @@
 #include "app.h"
 
 #include "app_config.h"
+#include "app_crsf.h"
 #include "app_framework_led.h"
 
 #include <string.h>
@@ -49,11 +50,20 @@ typedef struct
   app_frame_parser_t radio_frame_parser;
   app_pending_ack_t pending_ack;
   app_radio_runtime_config_t radio_config;
+  uint16_t latest_rc_channels[APP_CRSF_CHANNEL_COUNT];
+  uint32_t last_rc_ms;
+  uint32_t last_rc_output_ms;
+  uint32_t last_rc_failsafe_output_ms;
+  bool latest_rc_valid;
+#if APP_CRSF_TEST_MODE_ENABLE
+  uint32_t last_crsf_test_output_ms;
+#endif
 #if APP_HOST_CFG_COMMAND_ENABLE
   uint8_t host_cfg_command[APP_HOST_CFG_COMMAND_BUFFER];
   uint16_t host_cfg_command_length;
   bool cfg_mode_active;
   uint32_t cfg_mode_deadline_ms;
+  uint32_t host_cfg_command_deadline_ms;
   uint8_t cfg_mode_prefix_index;
 #endif
 } app_state_t;
@@ -106,6 +116,7 @@ static void App_SendRadioBytes(const uint8_t *bytes, uint16_t length);
 static void App_ReadRadioFor(uint32_t wait_ms, bool forward_to_host);
 static void App_ClearRadioInput(void);
 static bool App_SetUartBaudrate(UART_HandleTypeDef *uart, uint32_t baudrate);
+static void App_ConfigureHostUartForRole(void);
 static void App_ServiceWatchdog(void);
 #if APP_UART_STARTUP_BANNER
 static void App_SendStartupBanner(void);
@@ -142,6 +153,11 @@ static uint8_t App_FrameChecksum(const uint8_t *bytes, uint16_t length);
 static void App_SendAck(uint8_t request_seq, uint8_t request_cmd);
 static void App_RecordPendingAck(uint8_t target, uint8_t seq, uint8_t cmd);
 static void App_CheckPendingAckTimeout(void);
+static void App_UpdateCrsfOutput(void);
+static void App_ParseRcChannels(const uint8_t *payload, uint16_t payload_len, uint16_t channels[APP_CRSF_CHANNEL_COUNT]);
+#if APP_CRSF_TEST_MODE_ENABLE
+static void App_CrsfTestOutput(void);
+#endif
 
 void App_Init(const app_hw_t *hw)
 {
@@ -149,6 +165,7 @@ void App_Init(const app_hw_t *hw)
   g_app.hw = *hw;
   App_LoadRadioDefaultConfig();
   App_LoadRadioRuntimeConfig();
+  App_ConfigureHostUartForRole();
 
 #if APP_HOST_CFG_COMMAND_ENABLE
   g_app.cfg_mode_active = false;
@@ -181,6 +198,11 @@ void App_Run(void)
   App_PumpHostToRadio();
   App_PumpRadioToHost();
   App_CheckPendingAckTimeout();
+#if APP_CRSF_TEST_MODE_ENABLE
+  App_CrsfTestOutput();
+#else
+  App_UpdateCrsfOutput();
+#endif
 #if APP_HOST_CFG_COMMAND_ENABLE
   App_CheckCfgModeTimeout();
 #endif
@@ -232,11 +254,10 @@ static bool App_ConfigureRadioOnFirstBoot(void)
     return true;
   }
 
-  // 强制每次重启都重新配置E28，确保配置生效
-  // if (App_RadioConfigMarkerIsWritten())
-  // {
-  //   return true;
-  // }
+  if (App_RadioConfigMarkerIsWritten())
+  {
+    return true;
+  }
 
   ++g_app_diag_radio_config_first_boot_count;
 
@@ -253,7 +274,7 @@ static bool App_ConfigureRadioOnFirstBoot(void)
     {
       App_WriteHostString("E28 CONFIG FAILED: BAUDRATE NOT FOUND\r\n");
     }
-    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
+    (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_UART_BAUDRATE);
     App_ConfigureRadioTransparentMode();
     return false;
   }
@@ -279,7 +300,7 @@ static bool App_ConfigureRadioOnFirstBoot(void)
       App_WriteHostString("E28 CONFIG FAILED: VERIFY FAILED\r\n");
     }
   }
-  (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_UART_BAUDRATE);
+  (void)App_SetUartBaudrate(g_app.hw.radio_uart, APP_RADIO_UART_BAUDRATE);
   App_ConfigureRadioTransparentMode();
   return configured;
 #else
@@ -590,6 +611,18 @@ static bool App_RadioAckIsEnabled(void)
   return g_app.radio_config.ack_enable != 0U;
 }
 
+static void App_ConfigureHostUartForRole(void)
+{
+  uint32_t baudrate = APP_HOST_SLAVE_UART_BAUDRATE;
+
+  if (App_RadioRoleIsMaster())
+  {
+    baudrate = APP_HOST_MASTER_UART_BAUDRATE;
+  }
+
+  (void)App_SetUartBaudrate(g_app.hw.host_uart1, baudrate);
+}
+
 static uint32_t App_RadioConfigMarkerValue(void)
 {
   uint32_t marker = 0xE2800000U;
@@ -840,6 +873,7 @@ static bool App_TryHandleHostConfigByte(uint8_t byte)
       {
         g_app.cfg_mode_active = true;
         g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+        g_app.host_cfg_command_deadline_ms = HAL_GetTick() + APP_HOST_CFG_COMMAND_IDLE_MS;
         g_app.cfg_mode_prefix_index = 0;
         g_app.host_cfg_command_length = 0;
         App_WriteHostString("OK CFG MODE\r\n");
@@ -871,6 +905,7 @@ static bool App_TryHandleHostConfigByte(uint8_t byte)
     }
     g_app.host_cfg_command[g_app.host_cfg_command_length++] = byte;
     g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+    g_app.host_cfg_command_deadline_ms = HAL_GetTick() + APP_HOST_CFG_COMMAND_IDLE_MS;
     return true;
   }
 
@@ -882,6 +917,7 @@ static bool App_TryHandleHostConfigByte(uint8_t byte)
 
   g_app.host_cfg_command[g_app.host_cfg_command_length++] = byte;
   g_app.cfg_mode_deadline_ms = HAL_GetTick() + APP_HOST_CFG_MODE_TIMEOUT_MS;
+  g_app.host_cfg_command_deadline_ms = HAL_GetTick() + APP_HOST_CFG_COMMAND_IDLE_MS;
 
   if (!App_ConfigCommandPrefixMatches())
   {
@@ -960,10 +996,6 @@ static void App_ProcessHostConfigCommand(void)
       }
       else if (strcmp(key, "CH") == 0)
       {
-        if (!hex_prefixed && (value <= 99U))
-        {
-          value = (uint16_t)(((value / 10U) << 4) | (value % 10U));
-        }
         if (value > 0xFFU)
         {
           App_WriteHostString("ERR CH_RANGE\r\n");
@@ -976,10 +1008,6 @@ static void App_ProcessHostConfigCommand(void)
       }
       else if (strcmp(key, "OPTION") == 0)
       {
-        if (!hex_prefixed && (value <= 99U))
-        {
-          value = (uint16_t)(((value / 10U) << 4) | (value % 10U));
-        }
         if (value > 0xFFU)
         {
           App_WriteHostString("ERR OPTION_RANGE\r\n");
@@ -1019,7 +1047,7 @@ static void App_ProcessHostConfigCommand(void)
         App_WriteHostString("ERR KEY\r\n");
       }
     }
-    else if ((g_app.host_cfg_command_length >= 9U) &&
+    else if ((g_app.host_cfg_command_length >= 8U) &&
              (memcmp(&g_app.host_cfg_command[4], "SAVE", 4U) == 0))
     {
       App_WriteRadioConfigStorage(false);
@@ -1029,7 +1057,7 @@ static void App_ProcessHostConfigCommand(void)
       IWDG->KR = 0xAAAAU;
       NVIC_SystemReset();
     }
-    else if ((g_app.host_cfg_command_length >= 12U) &&
+    else if ((g_app.host_cfg_command_length >= 11U) &&
              (memcmp(&g_app.host_cfg_command[4], "DEFAULT", 7U) == 0))
     {
       App_LoadRadioDefaultConfig();
@@ -1249,6 +1277,13 @@ static void App_ExitCfgMode(void)
 static void App_CheckCfgModeTimeout(void)
 {
   if (g_app.cfg_mode_active &&
+      (g_app.host_cfg_command_length > 0U) &&
+      ((int32_t)(HAL_GetTick() - g_app.host_cfg_command_deadline_ms) >= 0))
+  {
+    App_ProcessHostConfigCommand();
+  }
+
+  if (g_app.cfg_mode_active &&
       ((int32_t)(HAL_GetTick() - g_app.cfg_mode_deadline_ms) >= 0))
   {
     App_ExitCfgMode();
@@ -1346,6 +1381,9 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
   uint8_t seq;
   uint8_t cmd;
   bool is_ack;
+  const uint8_t *payload;
+  uint16_t payload_len;
+  uint16_t channels[APP_CRSF_CHANNEL_COUNT];
 
   if (!App_FrameIsValid(frame, length))
   {
@@ -1353,6 +1391,15 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
     {
       ++g_app_diag_frame_drop_count;
     }
+    return;
+  }
+
+  if (from_radio &&
+      (length > 3U) &&
+      (frame[2] == APP_FRAME_HEAD) &&
+      App_FrameIsValid(&frame[2], frame[1]))
+  {
+    App_ProcessFrame(&frame[2], frame[1], true);
     return;
   }
 
@@ -1370,6 +1417,21 @@ static void App_ProcessFrame(const uint8_t *frame, uint16_t length, bool from_ra
     }
 
     ++g_app_diag_frame_rx_count;
+
+    // Handle RC_CHANNELS command
+    if (cmd == APP_FRAME_CMD_RC_CHANNELS)
+    {
+      payload = &frame[6];
+      payload_len = (uint16_t)(length - 7U);
+      App_ParseRcChannels(payload, payload_len, channels);
+      memcpy(g_app.latest_rc_channels, channels, sizeof(g_app.latest_rc_channels));
+      g_app.latest_rc_valid = true;
+      g_app.last_rc_ms = HAL_GetTick();
+
+      return;
+    }
+
+    // Non-RC frames: forward to host
     App_WriteBytes(g_app.hw.host_uart1, frame, length);
 
     if (App_RadioRoleIsSlave() &&
@@ -1561,3 +1623,108 @@ static void App_WriteBytes(UART_HandleTypeDef *target, const uint8_t *bytes, uin
     App_WriteUart(target, bytes[index]);
   }
 }
+
+static void App_ParseRcChannels(const uint8_t *payload, uint16_t payload_len, uint16_t channels[APP_CRSF_CHANNEL_COUNT])
+{
+  uint16_t i;
+
+  if (payload == NULL || channels == NULL)
+  {
+    return;
+  }
+
+  // Payload should be 16 * 2 = 32 bytes (16 channels as uint16_t little-endian)
+  if (payload_len < (APP_CRSF_CHANNEL_COUNT * 2U))
+  {
+    // Not enough data, fill with mid values
+    for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+    {
+      channels[i] = APP_CRSF_CHANNEL_MID;
+    }
+    return;
+  }
+
+  // Parse little-endian uint16_t channels
+  for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+  {
+    channels[i] = (uint16_t)(payload[i * 2U] | (payload[i * 2U + 1U] << 8));
+  }
+}
+
+static void App_UpdateCrsfOutput(void)
+{
+  const uint32_t now = HAL_GetTick();
+
+  if (!App_RadioRoleIsSlave())
+  {
+    return;
+  }
+
+  if (g_app.last_rc_ms == 0U)
+  {
+    return;
+  }
+
+  if ((now - g_app.last_rc_ms) >= APP_RC_FAILSAFE_TIMEOUT_MS)
+  {
+#if APP_CRSF_FAILSAFE_OUTPUT_ENABLE
+    if ((now - g_app.last_rc_failsafe_output_ms) >= APP_RC_FAILSAFE_OUTPUT_PERIOD_MS)
+    {
+      AppCrsf_SendFailsafe(g_app.hw.host_uart1);
+      g_app.last_rc_failsafe_output_ms = now;
+    }
+#endif
+    return;
+  }
+
+  if (g_app.latest_rc_valid &&
+      ((now - g_app.last_rc_output_ms) >= APP_CRSF_OUTPUT_PERIOD_MS))
+  {
+    AppCrsf_SendRcChannels(g_app.hw.host_uart1, g_app.latest_rc_channels);
+    g_app.last_rc_output_ms = now;
+  }
+}
+
+#if APP_CRSF_TEST_MODE_ENABLE
+static void App_CrsfTestOutput(void)
+{
+  const uint32_t now = HAL_GetTick();
+  uint16_t test_channels[APP_CRSF_CHANNEL_COUNT];
+  uint8_t i;
+  static uint16_t sweep_value = APP_CRSF_CHANNEL_MIN;
+  static int8_t sweep_direction = 1;
+
+  // Output CRSF test data periodically
+  if ((now - g_app.last_crsf_test_output_ms) >= APP_CRSF_TEST_OUTPUT_PERIOD_MS)
+  {
+    // Update sweep value (10 per update, 100Hz = 1000 units per second)
+    sweep_value += sweep_direction * 10;
+
+    // Reverse direction at limits
+    if (sweep_value >= APP_CRSF_CHANNEL_MAX)
+    {
+      sweep_value = APP_CRSF_CHANNEL_MAX;
+      sweep_direction = -1;
+    }
+    else if (sweep_value <= APP_CRSF_CHANNEL_MIN)
+    {
+      sweep_value = APP_CRSF_CHANNEL_MIN;
+      sweep_direction = 1;
+    }
+
+    // Generate test channel data with sweeping values
+    for (i = 0; i < APP_CRSF_CHANNEL_COUNT; i++)
+    {
+      test_channels[i] = sweep_value;
+    }
+
+    // CH3 (Throttle) always at minimum for safety
+    test_channels[2] = APP_CRSF_CHANNEL_MIN;
+    // CH5 (Arm) always disarmed for safety
+    test_channels[4] = APP_CRSF_CHANNEL_MIN;
+
+    AppCrsf_SendRcChannels(g_app.hw.host_uart1, test_channels);
+    g_app.last_crsf_test_output_ms = now;
+  }
+}
+#endif

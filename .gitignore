@@ -1,0 +1,38 @@
+# Build outputs
+build/
+*.o
+*.d
+*.lst
+*.elf
+*.hex
+*.bin
+*.map
+
+# Logs and local dumps
+*.log
+*_config*.bin
+full_firmware.bin
+
+# Local IDE/agent state
+.claude/
+.vscode/
+.idea/
+32
+
+# Ad-hoc local hardware test scripts
+test_com*.ps1
+test_crsf_*.ps1
+test_crsf_*.py
+test_crsf_output.sh
+test_final_correct.ps1
+test_protocol_correct.ps1
+
+# Local serial diagnostic helpers
+tools/dump_serial_hex.ps1
+tools/enter_cfg_once.ps1
+tools/inject_handheld_a5_to_radio.ps1
+tools/monitor_com8_crsf_quality.ps1
+tools/monitor_crsf_port_quality.ps1
+tools/monitor_handheld_a5_quality.ps1
+tools/query_cfg.ps1
+tools/set_cfg.ps1
